@@ -37,14 +37,56 @@
 
 
 
-from playwright.sync_api import sync_playwright
+# from playwright.sync_api import sync_playwright
+# import pandas as pd 
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()  
-    page = browser.new_page()
-    page.goto("https://news.ycombinator.com/")
+# with sync_playwright() as p:
+#     browser = p.chromium.launch(headless=True)  # headless mode for automation
+#     page = browser.new_page()
+#     page.goto("https://rnbtender.nprocure.com/")
 
-    titles = page.query_selector_all(".titleline > a")
-    for title in titles:
-        print(title.inner_text())
-    browser.close()
+#     titles = page.query_selector_all(".table > tr")
+#     data = []
+#     for title in titles:
+#         data.append(title.inner_text())
+
+#     df = pd.DataFrame(data, columns=["Tender Titles"])
+#     df.to_excel("tender_titles.xlsx", index=False)
+#     print("✅ Tender titles scraped and saved to tender_titles.xlsx")
+
+    
+#     browser.close()
+
+
+
+
+
+
+
+
+
+
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Step 1: Send an HTTP request to the target URL
+url = "https://quotes.toscrape.com/"
+headers = {"User-Agent": "Mozilla/5.0"}
+response = requests.get(url, headers=headers)
+
+# Step 2: Parse the HTML content with BeautifulSoup
+soup = BeautifulSoup(response.text, "html.parser")
+
+# Step 3: Find the data you want (e.g., all quotes and authors)
+quotes = []
+for quote_block in soup.find_all("div", class_="quote"):
+    text = quote_block.find("span", class_="text").get_text(strip=True)
+    author = quote_block.find("small", class_="author").get_text(strip=True)
+    quotes.append([text, author])
+
+# Step 4: Save the data to Excel
+df = pd.DataFrame(quotes, columns=["Quote", "Author"])
+df.to_excel("quotes.xlsx", index=False)
+print("✅ Quotes scraped and saved to quotes.xlsx")
