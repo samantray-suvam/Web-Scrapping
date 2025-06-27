@@ -30,9 +30,9 @@ print("Length of Parameter = " , len(links))
 
 
 # Extract the first link
-link_1 = links[0].get("href")
+link_1 = links[1].get("href")
 
-product_list = "https://amazon.in" + link_1
+product_list = "https://www.amazon.in/s?k=adventure+book&crid=1JADR5B88B73J&sprefix=adventure+%2Caps%2C204&ref=nb_sb_ss_mvt-t11-ranker_1_10" + link_1
 # print("Product List = ", product_list)
 
 
@@ -49,13 +49,14 @@ print("Length of new_soup:", len(new_soup))
 
 
 #Extract Product title
-book_title = new_soup.find("span", attrs={"id": "productTitle"}).get_text(strip=True)
-print("Book Title:", book_title)
+book_title = new_soup.find("a", attrs={"class": "a-link-normal s-line-clamp-2 s-line-clamp-3-for-col-12 s-link-style a-text-normal"}).get_text(strip=True)
+print("Book Title: ", book_title)
 
 
 #Extract Product Price
 book_price = new_soup.find("span", attrs={"class": "a-price-whole"}).get_text(strip=True)
-print("Price:", book_price)
+book_price_num = float(book_price.replace(",", ""))
+print("Price: ", book_price_num)
 
 
 #Extract product rating
@@ -65,7 +66,7 @@ print("Rating:", book_rating)
 
 # Extract product author (get text, not just the tag)
 book_auth_tag = new_soup.find("a", attrs={"class": "a-size-base a-link-normal s-underline-text s-underline-link-text s-link-style"})
-book_auth = book_auth_tag.get_text(strip=True) if book_auth_tag else ""
+book_auth = book_auth_tag.get_text(strip=True) if book_auth_tag else "N/A"
 
 # Collect all data in a dictionary
 book_data = {
