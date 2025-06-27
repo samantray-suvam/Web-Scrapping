@@ -1,6 +1,7 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
+import numpy as np
 
 
 # Function to extract Product Title
