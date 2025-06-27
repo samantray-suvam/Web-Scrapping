@@ -23,8 +23,8 @@ print("No. of Links found = ", len(links))
 
 book_data_list = []
 
-for i in range(min(5, len(links))):
-    product_url = "https://www.amazon.in/" + links[i].get("href")
+for i in range(len(links)):
+    product_url = "https://www.amazon.in" + links[i].get("href")
     new_webpage = requests.get(product_url, headers=Headers)
     new_soup = BeautifulSoup(new_webpage.content, "html.parser")
 
@@ -53,7 +53,7 @@ for i in range(min(5, len(links))):
         book_auth = ""
     # print("Author: ", book_auth)
 
-    print()  # Print a blank line between books
+    # print()  # Print a blank line between books
 
     # Collect all data in a dictionary
     book_data = {
@@ -63,7 +63,7 @@ for i in range(min(5, len(links))):
         "Author": book_auth
     }
     book_data_list.append(book_data)
-    time.sleep(2)  # Be polite to the server
+    time.sleep(5) 
 
 # Create a DataFrame and save to Excel
 df = pd.DataFrame(book_data_list)
