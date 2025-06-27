@@ -63,6 +63,19 @@ book_rating = new_soup.find("span", attrs={"class": "a-icon-alt"}).get_text(stri
 print("Rating:", book_rating)
 
 
-# Extract product author
-book_auth = new_soup.find("a", attrs={"class": "a-size-base a-link-normal s-underline-text s-underline-link-text s-link-style"}).get_text(strip=True)
-print("Author: ", book_auth)
+# Extract product author (get text, not just the tag)
+book_auth_tag = new_soup.find("a", attrs={"class": "a-size-base a-link-normal s-underline-text s-underline-link-text s-link-style"})
+book_auth = book_auth_tag.get_text(strip=True) if book_auth_tag else ""
+
+# Collect all data in a dictionary
+book_data = {
+    "Title": book_title,
+    "Price": book_price,
+    "Rating": book_rating,
+    "Author": book_auth
+}
+
+# Create a DataFrame and save to Excel
+df = pd.DataFrame([book_data])
+df.to_excel("amazon_book_details.xlsx", index=False)
+print("✅ Book details saved to amazon_book_details.xlsx")
