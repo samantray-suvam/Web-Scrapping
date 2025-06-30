@@ -7,7 +7,7 @@ import time
 def scrape_rnb_tenders():
     with sync_playwright() as p:
         # Launch browser (headless=False during development so you can see it)
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=False) 
         page = browser.new_page()
         
         # Go to the target URL
@@ -37,7 +37,7 @@ def scrape_rnb_tenders():
         cells = [cell.get_text(strip=True) for cell in row.find_all(["td", "th"])]
         if cells:
             data.append(cells)
-            print(cells)  # print for debug
+            # print(cells)  # print for debug
 
     # Optional: save to Excel
     df = pd.DataFrame(data)
