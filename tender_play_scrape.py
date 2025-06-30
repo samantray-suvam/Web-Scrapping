@@ -42,7 +42,7 @@ def scrape_rnb_tenders():
     # Optional: save to Excel
     df = pd.DataFrame(data)
     df.to_excel("rnb_tenders.xlsx", index=False, header=False)
-    print("\n✅ Data saved to rnb_tenders.xlsx")
+    print("\n Data saved to rnb_tenders.xlsx")
 
 if __name__ == "__main__":
     scrape_rnb_tenders()
