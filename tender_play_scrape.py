@@ -5,44 +5,46 @@ import pandas as pd
 import time
 
 def scrape_rnb_tenders():
+    all_data = []
     with sync_playwright() as p:
-        # Launch browser (headless=False during development so you can see it)
-        browser = p.chromium.launch(headless=False) 
+        browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-        
-        # Go to the target URL
         page.goto("https://rnbtender.nprocure.com/")
+        page.wait_for_timeout(5000)
 
-        # Wait for the main content to load; adjust selector if needed
-        page.wait_for_timeout(5000)  # simple fixed wait; you could wait for a specific element too
+        while True:
+            html = page.content()
+            soup = BeautifulSoup(html, "html.parser")
+            table = soup.find("table")
+            if not table:
+                print("No table found on the page!")
+                break
 
-        # Get fully rendered page content
-        html = page.content()
-        
-        browser.close()  # close the browser as soon as you grab the page
+            # Extract rows
+            for row in table.find_all("tr"):
+                cells = [cell.get_text(strip=True) for cell in row.find_all(["td", "th"])]
+                if cells:
+                    all_data.append(cells)
 
-    # Now parse the HTML with BeautifulSoup
-    soup = BeautifulSoup(html, "html.parser")
+            # Try to find and click the "Next" button
+            try:
+                # Adjust selector as needed for your site
+                next_button = page.query_selector('a[aria-label="Next"]') or page.query_selector('a:has-text("Next")')
+                if next_button and next_button.is_enabled():
+                    next_button.click()
+                    page.wait_for_timeout(3000)  # Wait for next page to load
+                else:
+                    break  # No more pages
+            except Exception as e:
+                print("No more pages or error:", e)
+                break
 
-    # Example: Find the first table on the page
-    table = soup.find("table")
+        browser.close()
 
-    if not table:
-        print("No table found on the page!")
-        return
-
-    # Extract rows
-    data = []
-    for row in table.find_all("tr"):
-        cells = [cell.get_text(strip=True) for cell in row.find_all(["td", "th"])]
-        if cells:
-            data.append(cells)
-            # print(cells)  # print for debug
-
-    # Optional: save to Excel
-    df = pd.DataFrame(data)
-    df.to_excel("rnb_tenders.xlsx", index=False, header=False)
-    print("\n Data saved to rnb_tenders.xlsx")
+    # Save all data to Excel
+    df = pd.DataFrame(all_data)
+    df.to_excel("tenders_list.xlsx", index=False, header=False)
+    print("\nData from all pages saved to tenders_list.xlsx")
 
 if __name__ == "__main__":
     scrape_rnb_tenders()
