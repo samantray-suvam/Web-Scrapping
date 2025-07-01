@@ -1,0 +1,1616 @@
+var currencyUnit = "Only";
+var currencySubUnit = "";
+var someNumbers = [ 1, 2, 3, 4, 5 ];
+var units = [ "zero ", "One ", "Two ", "Three ", "Four ", "Five ", "Six ",
+		"Seven ", "Eight ", "Nine " ];
+var tens = [ "", "", "Twenty ", "Thirty ", "Forty ", "Fifty ", "Sixty ",
+		"Seventy ", "Eighty ", "Ninety " ];
+var index = [ "", "", "Hundred ", "Thousand ", "", "Lacs ", "", "Crore ", "",
+		"Hundred ", "Thousand ", "", "Lacs ", "", "Hundred ", "Thousand ",
+		"Lacs ", "Crore ", "" ];
+var tenner = [ "Ten ", "Eleven ", "Twelve ", "Thirteen ", "Fourteen ",
+		"Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen " ];
+
+function convert(numVal)
+{
+		var numberValue = numVal;
+        var WordsVal = "";
+        var WordsDecVal="";
+        var lenNumVal="";
+        var lenNumValwodec="";
+        var decVal="";
+        var iPreciseValue="";
+        var iDecValue="";
+        
+        if((numVal != null && numVal != "null") && numVal != ""){
+        	
+        	numval=numVal + "";
+    		numVal = numVal.toString();		
+            lenNumVal = numVal.length;
+            if(lenNumVal > 15)
+            {
+                return("");
+            }
+            /*if(numVal < 0)
+            {
+                return("");
+            }*/
+            if(numVal == 0)
+            {
+    			return("zero ");
+            }
+            if((numVal.indexOf(".")) > 0)
+            {
+    			iPreciseValue = mid(numVal,0,numVal.indexOf("."));
+    			iDecValue = ERight(numVal,(numVal.length)-numVal.indexOf(".")-1);
+    			if(iDecValue.length == 1)
+    			{
+    				WordsDecVal = doubleDigit(iDecValue);
+    				decVal = (mid(numVal,(numVal.indexOf(".")+1),1)) + "0";
+    			}
+    			if(iDecValue.length == 2){
+    				WordsDecVal = doubleDigit(iDecValue);
+    				decVal = mid(iDecValue,0,2);
+    			}
+    			if(iDecValue.length == 3){
+    				WordsDecVal = threeDigit(iDecValue);
+    				decVal = mid(iDecValue,0,3);
+    			}
+    			if(iDecValue.length == 4){
+    				WordsDecVal = fourDigit(iDecValue);
+    				decVal = mid(iDecValue,0,4);
+    			}
+            } else if((numVal.indexOf(".")) == 0) {
+    			iPreciseValue = "0";
+    			iDecValue = ERight(numVal,(numVal.length)-numVal.indexOf(".")-1);
+    			if(iDecValue.length == 1)
+    			{
+    				WordsDecVal = doubleDigit(iDecValue);
+    				decVal = (mid(numVal,(numVal.indexOf(".")+1),1)) + "0";
+    			}
+    			if(iDecValue.length == 2){
+    				WordsDecVal = doubleDigit(iDecValue);
+    				decVal = mid(iDecValue,0,2);
+    			}
+    			if(iDecValue.length == 3){
+    				WordsDecVal = threeDigit(iDecValue);
+    				decVal = mid(iDecValue,0,3);
+    			}
+    			if(iDecValue.length == 4){
+    				WordsDecVal = fourDigit(iDecValue);
+    				decVal = mid(iDecValue,0,4);
+    			}
+            }else {
+    			iPreciseValue = numVal;
+    			decVal = 0
+    			WordsDecVal = ""
+            }
+            if(numVal.charAt(0) === '-'){
+            	WordsVal = "Minus ";
+            	var newStr = numVal.replace(/-/g, '');
+            	var beforeDecimal = newStr.split('.')[0];
+            	iPreciseValue = beforeDecimal;
+            }
+            
+            numVal = parseInt(numVal);
+    		lenNumValwodec = iPreciseValue.length;
+    		
+         switch(lenNumValwodec)
+         {
+    			case 15:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;
+    			case 14:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;
+    			case 13:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;
+    			case 12:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;
+    			case 11:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;		
+                case 10:
+                     WordsVal = WordsVal + moreThanNineDigit(iPreciseValue)
+                     break;
+                case 9 :
+                     WordsVal = WordsVal + nineDigit(iPreciseValue)
+                     break;
+                case 8:
+                     WordsVal = WordsVal + eightDigit(iPreciseValue)
+                     break;
+                case 7:
+                     WordsVal = WordsVal + sevenDigit(iPreciseValue)
+                     break;
+                case 6:
+                     WordsVal = WordsVal + sixDigit(iPreciseValue)
+                     break;
+                case 5:
+                     WordsVal = WordsVal + fiveDigit(iPreciseValue)
+                     break;
+                case 4:
+                     WordsVal = WordsVal + fourDigit(iPreciseValue)
+                     break;
+                case 3:
+                     WordsVal = WordsVal + threeDigit(iPreciseValue)
+                     break;
+                case 2:
+                     WordsVal = WordsVal + doubleDigit(iPreciseValue)
+                     break;
+                case 1:
+                     WordsVal = WordsVal +singleDigit(iPreciseValue);
+    				 break;
+                case 0:
+    	             WordsVal = "Zero "
+    	             break;
+          }
+
+            var numarray = numberValue.toString().split('.');
+            var decWord = "";
+    		 if(numarray.length > 1) {
+    			 decimal = numarray[1];
+    			 if(parseInt(decimal) > 0) {
+    				 decWord = "Point";
+    				 for(var i=0; i<decimal.length; i++) {
+    					 if(decimal.charAt(i) == '0') {
+    						 decWord += " Zero";
+    					 } else {
+    						 decWord += " " + singleDigit(parseInt(decimal.charAt(i)+""));
+    					 }
+    				 }
+    			 }
+    		 }
+    		 WordsDecVal = "";
+    		 WordsDecVal = decWord;
+            if(decVal == 0)
+            {
+                return(WordsVal);
+            }
+            else
+            {
+                return(WordsVal + WordsDecVal + "Only");
+            }
+        }
+        
+        
+}
+
+function singleDigit(numVal) 
+{
+var iNum="";
+if(numVal == "08")
+{
+	return("Eight ");
+}
+else if(numVal == "09")
+{
+	return("Nine ");
+}
+
+iNum = parseInt(numVal);
+        switch(iNum)
+		{
+           case 9:
+                return("Nine ");
+           case 8:
+                return("Eight ");
+           case 7:
+                return("Seven ");
+           case 6: 
+                return("Six ");
+           case 5:
+                return("Five ");
+           case 4:
+                return("Four ");
+           case 3:
+                return("Three ");
+           case 2:
+                return("Two ");
+           case 1:
+                return("One ");
+           case 0:
+				return("Zero ");
+		 }	
+}        
+//----------------------------------------------------------------------------
+function doubleDigit(numVal)
+{
+var iNum="";
+iNum = parseInt(numVal);
+//******************************************
+//Hard coding done because of Internet Explorer 5.0 problem
+if(numVal == "01")
+{
+	return("Zero One ");
+}
+else if(numVal == "02")
+{
+	return("Zero Two ");
+}
+else if(numVal == "03")
+{
+	return("Zero Three ");
+}
+else if(numVal == "04")
+{
+	return("Zero Four ");
+}
+else if(numVal == "05")
+{
+	return("Zero Five ");
+}
+else if(numVal == "06")
+{
+	return("Zero Six ");
+}
+else if(numVal == "07")
+{
+	return("Zero Seven ");
+}
+else if(numVal == "08")
+{
+	return("Zero Eight ");
+}
+else if(numVal == "09")
+{
+	return("Zero Nine ");
+}
+//******************************************
+
+        if((numVal.length) == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if((numVal.length) == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if((numVal.length) == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        
+    //***********************************************************
+    //Check how to give range in the case statement
+        if(iNum  >= 20)
+        {
+		
+          switch(iNum)
+          {
+            case 99:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 98:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 97:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 96:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 95:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 94:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 93:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 92:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 91:
+                return("Ninety " + singleDigit(Right(numVal, 1)));
+                break;
+            case 90:
+                return("Ninety ");
+            case 89:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+				break;
+            case 88:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 87:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 86:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 85:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 84:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 83:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 82:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 81:
+                return("Eighty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 80:
+                return("Eighty ");
+                break;
+            case 79:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 78:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 77:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 76:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 75:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 74:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 73:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 72:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 71:
+                return("Seventy " + singleDigit(Right(numVal, 1)));
+                break;
+            case 70:
+                return("Seventy ");
+				break;
+            case 69:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 68:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 67:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 66:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 65:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 64:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 63:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 62:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 61:
+                return("Sixty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 60:
+                return("Sixty ");
+                break;
+            case 59:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 58:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 57:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 56:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 55:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 54:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 53:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 52:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 51:
+                return("Fifty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 50:
+                return("Fifty ");
+                break;
+            case 49:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 48:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 47:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 46:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 45:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 44:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 43:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 42:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 41:
+                return("Forty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 40:
+                return("Forty ");
+            case 39:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 38:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 37:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 36:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 35:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 34:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 33:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 32:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 31:
+                return("Thirty " + singleDigit(Right(numVal, 1)));
+                break;
+            case 30:
+                return("Thirty ");
+                break;
+            case 29:
+				return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 28:
+				return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 27:
+				return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 26:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 25:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 24:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 23:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 22:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 21:
+                return("Twenty " + singleDigit(Right(numVal, 1)));
+            case 20:
+                return("Twenty ");
+		   }
+		}
+        else
+        {
+          switch(iNum)
+          { 
+           case 19:
+                return("Nineteen ");
+           case 18:
+                return("Eighteen ");
+           case 17:
+                return("Seventeen ");
+           case 16:
+                return("Sixteen ");
+           case 15:
+                return("Fifteen ");
+           case 14:
+                return("Fourteen ");
+           case 13:
+                return("Thirteen ");
+           case 12:
+                return("Twelve ");
+           case 11:
+                return("Eleven ");
+           case 10:
+                return("Ten ");
+           case 9:
+				return("Nine ");
+           case 8:
+				return("Eight ");
+           case 7:
+				return("Seven ");
+           case 6:
+				return("Six ");
+           case 5:
+				return("Five ");
+           case 4:
+				return("Four ");
+           case 3:
+				return("Three ");
+           case 2:
+				return("Two ");
+           case 1:
+				return("One ");
+           case 0:
+				return(" ");
+		  } 	
+
+        }
+    //******************************************
+   
+}
+//--------------------------------------------------------------------------
+function threeDigit(numVal)
+{
+        var threeNumVal="";
+        var twoNumVal="";
+        var secondDigit="";
+        var thirdDigit="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+ //---------------------------------------------       
+//Yet to be changed
+        threeNumVal = parseInt(mid(numVal, 0, 1));
+        secondDigit = mid(numVal, 1, 1);
+        twoNumVal = mid(numVal, 1, 2);
+ //---------------------------------------------       
+        switch(threeNumVal)
+        {
+           case 9:
+                thirdDigit = "Nine hundred ";
+                break;
+           case 8:
+                thirdDigit = "Eight hundred ";
+                break;
+           case 7:
+                thirdDigit = "Seven hundred ";
+                break;
+           case 6:
+                thirdDigit = "Six hundred ";
+                break;
+           case 5:
+                thirdDigit = "Five hundred ";
+                break;
+           case 4:
+                thirdDigit = "Four hundred ";
+                break;
+           case 3:
+                thirdDigit = "Three hundred ";
+                break;
+           case 2:
+                thirdDigit = "Two hundred ";
+                break;
+           case 1:
+                thirdDigit = "One hundred ";
+                break;
+           case 0:
+                thirdDigit = " ";
+                break;
+        }
+       
+       if(twoNumVal == "00")
+       {
+            return(thirdDigit);
+       }
+       else
+       {
+            if(secondDigit == "0")
+            {
+                 return(thirdDigit + singleDigit(twoNumVal));
+            }
+            else
+            {
+            	if(threeNumVal == "0"){
+            		return("zero" + thirdDigit + doubleDigit(twoNumVal));
+            	}else{
+            		return(thirdDigit + doubleDigit(twoNumVal));
+            	}
+				 
+            }
+       }
+}
+
+function fourDigit(numVal)
+{        
+        var fourNumVal=""; 
+        var fourthDigit="",secondDigit=""; 
+        var threeNumVal="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+		}        
+		
+		//-----------------------------------------------------
+		//Yet to be changed
+        fourNumVal = parseInt(mid(numVal, 0, 1));
+        secondDigit = mid(numVal, 1, 1);
+        threeNumVal = mid(numVal, 1, 3);
+		//-----------------------------------------------------
+		
+        switch(fourNumVal)
+        {
+           case 9:
+                fourthDigit = "Nine thousand ";
+                break;
+           case 8:
+                fourthDigit = "Eight thousand ";
+                break;
+           case 7:
+                fourthDigit = "Seven thousand ";
+                break;
+           case 6:
+                fourthDigit = "Six thousand ";
+                break;
+           case 5:
+                fourthDigit = "Five thousand ";
+                break;
+           case 4:
+                fourthDigit = "Four thousand ";
+                break;
+           case 3:
+                fourthDigit = "Three thousand ";
+                break;
+           case 2:
+                fourthDigit = "Two thousand ";
+                break;
+           case 1:
+                fourthDigit = "One thousand ";
+                break;
+           case 0:
+                fourthDigit = " ";
+                break;
+        }
+        
+        if(threeNumVal == "000")
+        {
+             return(fourthDigit);
+        }
+        else
+        {
+             if(secondDigit == "0")
+             {
+                  return(fourthDigit + threeDigit(threeNumVal));
+             }
+             else
+             {
+             	if(fourNumVal == "0"){
+             		return("Zero" + fourthDigit + threeDigit(threeNumVal));
+             	}else{
+             		return(fourthDigit + threeDigit(threeNumVal));
+             	}
+ 				 
+             }
+        }
+        
+//        return(fourthDigit + threeDigit(threeNumVal));
+}        
+
+function fiveDigit(numVal)
+{
+        var twoThousandDigits="";
+        var restThreeDigits="";
+        var str_Thousand="";
+        var str_Hundred="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+		}
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+		}
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        //---------------------------------------------------
+		// Yet to be changed        
+        twoThousandDigits = mid(numVal, 0, 2);
+        restThreeDigits = mid(numVal, 2, 3);
+        //---------------------------------------------------
+        str_Thousand = doubleDigit(twoThousandDigits);
+        str_Hundred = threeDigit(restThreeDigits);
+        if(str_Thousand != " ")
+        {
+			str_Thousand = str_Thousand  + "Thousand ";
+        }
+        else
+        {
+			str_Thousand = " ";
+        }
+        return(str_Thousand  + str_Hundred);
+        
+}
+
+//Append the sixth digit
+function sixDigit(numVal)
+{
+		var sixNumVal="";
+        var sixthDigit="";
+        var fiveNumVal="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+        if(numVal == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        if(numVal.length == 5)
+        {
+            return(fiveDigit(numVal));
+        }
+        //-----------------------------------------------
+        //Yet to be changed
+        sixNumVal = parseInt(mid(numVal, 0, 1));
+                
+        fiveNumVal = mid(numVal, 1, 5);
+		//-----------------------------------------------
+		
+        switch(sixNumVal)
+        {
+           case 9:
+                sixthDigit = "Nine lacs ";
+                break;
+           case 8:
+                sixthDigit = "Eight lacs ";
+                break;
+           case 7:
+                sixthDigit = "Seven lacs ";
+                break;
+           case 6:
+                sixthDigit = "Six lacs ";
+                break;
+           case 5:
+                sixthDigit = "Five lacs ";
+                break;
+           case 4:
+                sixthDigit = "Four lacs ";
+                break;
+           case 3:
+                sixthDigit = "Three lacs ";
+                break;
+           case 2:
+                sixthDigit = "Two lacs ";
+                break;
+           case 1:
+                sixthDigit = "One lac ";
+                break;
+           case 0:
+                sixthDigit = " ";
+                break;
+        }
+        
+        return(sixthDigit + fiveDigit(fiveNumVal));
+        
+}
+
+//Append the seventh digit
+function sevenDigit(numVal)
+{
+        var twoLacsDigits="";
+        var restFiveDigits=""; 
+		var strLacs="";
+		var strThousands="";
+		        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        if(numVal.length == 5)
+        {
+            return(fiveDigit(numVal));
+        }
+        if(numVal.length == 6)
+        {
+            return(sixDigit(numVal));
+        }
+        
+        //-----------------------------------------------
+        //Yet to be changed
+        twoLacsDigits = mid(numVal, 0, 2);
+        restFiveDigits = mid(numVal, 2, 5);
+        //-----------------------------------------------
+        strLacs = doubleDigit(twoLacsDigits);
+        strThousands = fiveDigit(restFiveDigits);
+        if(strLacs != " ")
+        {
+			strLacs = strLacs + "Lacs "
+        }
+        else
+        {
+			strLacs = " "
+        }
+        
+        return(strLacs + strThousands);
+        
+}
+//Completed
+//----------------------------------------
+//Append the eight digit
+function eightDigit(numVal)
+{        
+        var eightNumVal="";
+        var eighthDigit="";
+        var sevenNumVal="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        if(numVal.length == 5)
+        {
+            return(fiveDigit(numVal));
+        }
+        if(numVal.length == 6)
+        {
+            return(sixDigit(numVal));
+        }
+        if(numVal.length == 7)
+        {
+            return(sevenDigit(numVal));
+        }
+        
+        //--------------------------------------------
+        //Yet to be changed
+        eightNumVal = parseInt(mid(numVal, 0, 1));
+                
+        sevenNumVal = mid(numVal, 1, 7);
+		//--------------------------------------------
+		
+        switch(eightNumVal)
+        {
+           case 9:
+                eighthDigit = "Nine crore "
+                break;
+           case 8:
+                eighthDigit = "Eight crore "
+                break;
+           case 7:
+                eighthDigit = "Seven crore "
+                break;
+           case 6:
+                eighthDigit = "Six crore "
+                break;
+           case 5:
+                eighthDigit = "Five crore "
+                break;
+           case 4:
+                eighthDigit = "Four crore "
+                break;
+           case 3:
+                eighthDigit = "Three crore "
+                break;
+           case 2:
+                eighthDigit = "Two crore "
+                break;
+           case 1:
+                eighthDigit = "One crore "
+                break;
+           case 0:
+                eighthDigit = " "
+                break;
+        }
+        
+        return(eighthDigit + sevenDigit(sevenNumVal));       
+}
+
+//----------------------------------------
+//Append the ninth digit
+function nineDigit(numVal)
+{
+        var twoCroreDigits=""; 
+        var restSevenDigits=""; 
+        var strCroreDigits="";
+        var strRestSevenDigits="";
+        
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+		{
+            return(doubleDigit(numVal));
+        }
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        if(numVal.length == 5)
+        {
+            return(fiveDigit(numVal));
+        }
+        if(numVal.length == 6)
+        {
+            return(sixDigit(numVal));
+        }
+        if(numVal.length == 7)
+        {
+            return(sevenDigit(numVal));
+        }
+        if(numVal.length == 8)
+		{
+            return(eightDigit(numVal));
+        }
+        
+        //------------------------------------------------------
+        //Yet to be changed
+        twoCroreDigits = mid(numVal, 0, 2);
+        restSevenDigits = mid(numVal, 2, 7);
+        //------------------------------------------------------
+        strCroreDigits = doubleDigit(twoCroreDigits);
+        strRestSevenDigits = sevenDigit(restSevenDigits);
+        if(strCroreDigits != " ")
+        {
+			strCroreDigits = strCroreDigits + "Crores "; 
+        }
+        else
+        {
+			strCroreDigits = " ";
+        }
+        //------------------------------------------------------
+        
+        return(strCroreDigits + strRestSevenDigits);
+        
+}
+
+//-----------------------------------------------------\
+//The numbers which have more than 9 digits will be shown only wqi
+function moreThanNineDigit(numVal)
+{        
+        var firstFiveDigits="";
+        var restSevenDigits="";
+        var strFirstFiveDigits="";
+        var strRestSevenDigits="";
+        
+        if(numVal.length == 1)
+        {
+            return(singleDigit(numVal));
+        }
+        if(numVal.length == 2)
+        {
+            return(doubleDigit(numVal));
+        }
+        if(numVal.length == 3)
+        {
+            return(threeDigit(numVal));
+        }
+        if(numVal.length == 4)
+        {
+            return(fourDigit(numVal));
+        }
+        if(numVal.length == 5)
+        {
+            return(fiveDigit(numVal));
+        }
+        if(numVal.length == 6)
+        {
+            return(sixDigit(numVal));
+        }
+        if(numVal.length == 7)
+        {
+            return(sevenDigit(numVal));
+        }
+        if(numVal.length == 8)
+        {
+            return(eightDigit(numVal));
+        }
+        if(numVal.length == 9)
+        {
+            return(nineDigit(numVal));
+        }
+
+//--------------------------------------------
+// Yet to be changed
+        if(numVal.length == 10)
+        {
+            firstFiveDigits = mid(numVal, 0, 3);
+            restSevenDigits = mid(numVal, 3, 7);
+        }
+        if(numVal.length == 11)
+        {	
+            firstFiveDigits = mid(numVal, 0, 4);
+            restSevenDigits = mid(numVal, 4, 7);
+        }
+        
+        if(numVal.length == 12)
+        {
+            firstFiveDigits = mid(numVal, 0, 5);
+            restSevenDigits = mid(numVal, 5, 7);
+        }
+        if(numVal.length == 13)
+        {
+            firstFiveDigits = mid(numVal, 0, 6);
+            restSevenDigits = mid(numVal, 5, 7);
+        }
+        if(numVal.length == 14)
+        {
+            firstFiveDigits = mid(numVal, 0, 7);
+            restSevenDigits = mid(numVal, 5, 7);
+        }
+        if(numVal.length == 15)
+        {
+            firstFiveDigits = mid(numVal, 0, 8);
+            restSevenDigits = mid(numVal, 5, 7);
+        }
+        
+//--------------------------------------------
+		strFirstFiveDigits = eightDigit(firstFiveDigits);
+		strRestSevenDigits = sevenDigit(restSevenDigits);
+		if(strFirstFiveDigits != " ")
+		{
+			strFirstFiveDigits = strFirstFiveDigits + "Crores ";
+		}
+		else
+		{
+			strFirstFiveDigits = " ";
+		}
+//--------------------------------------------
+        return(strFirstFiveDigits + strRestSevenDigits);
+                
+}
+
+
+
+function mid(numVal,iStart,iEnd)
+{
+	var s_Final_String="";
+	var i_Str_Length="";
+	i_Str_Length = numVal.length;
+
+	if((iStart + iEnd) > i_Str_Length)
+	{
+		return("");
+	}
+	else
+	{
+		s_Final_String = numVal.substr(iStart,iEnd);
+		
+		
+		
+	}
+	return(s_Final_String);
+}
+
+//Returns the right most number only in the whole number
+function Right(numVal,iEnd)
+{
+	var s_Final_String;
+	s_Final_String = numVal.substr(numVal.length - 1, numVal.length);
+	return(s_Final_String);
+}
+
+function Left(numVal,iEnd)
+{
+	var s_Final_String;
+	s_Final_String = numVal.substr(0,iEnd);
+	return(s_Final_String);
+}
+
+function ERight(numVal,iEnd)
+{
+	var s_Final_String;
+	s_Final_String = numVal.substr(numVal.length - iEnd , numVal.length);
+	return(s_Final_String);
+}
+
+//************************************************
+//Funcation return the number passed ot it
+//rounded to the second digit after decimal
+function fn_Get_Round_Number(iNum)
+{
+	var sNumberValue;
+	var i_PreciseValue;
+	var i_DecVal;
+	var i_Final_Value;
+	
+	sNumberValue = iNum.toString()
+	
+//Code to check whether decimal points are there or not
+//*********************************
+//If there is number before decimal palce
+		if(sNumberValue == "")
+		{
+			return("0")
+		}
+        if((sNumberValue.indexOf(".")) > 0)
+        {
+        
+			i_PreciseValue  = mid(sNumberValue,0,sNumberValue.indexOf("."));
+//numVal.substr(numval.search(".")+1,numVal.length);
+			i_DecVal  = ERight(sNumberValue,(sNumberValue.length)-sNumberValue.indexOf(".")-1);
+			
+		    if(i_DecVal.length == 0)
+		    {
+			sNumberValue=sNumberValue.substr(0,(sNumberValue.length-1));
+	     	}
+	     	else if(i_DecVal.length == 1)
+			{
+				i_DecVal = (mid(sNumberValue,(sNumberValue.indexOf(".")+1),1)) + "0";
+			}
+			else if(i_DecVal.length == 2)
+			{
+				i_DecVal = i_DecVal;
+			}
+			else if(i_DecVal.length == 3)
+			{
+				i_DecVal = i_DecVal;
+			}
+			else if(i_DecVal.length == 4)
+			{
+				i_DecVal = i_DecVal;
+			}
+			else
+			{
+				i_DecVal = mid(i_DecVal ,0,4);
+				var strRoundedOff;
+				strRoundedOff = fn_Round_Last_Digit(i_DecVal);
+				if(strRoundedOff  == "IV")
+				{
+					i_PreciseValue  = parseFloat(i_PreciseValue) + 1;	
+					i_DecVal = 0;
+				}
+				else
+				{
+					i_DecVal = fn_Round_Last_Digit(i_DecVal);
+				}
+			}
+			i_Final_Value = parseFloat(i_PreciseValue) + "." + i_DecVal;	
+        }
+//*********************************
+//If there is no number but decimal place is there
+        else if((sNumberValue.indexOf(".")) == 0)
+        {
+			i_PreciseValue  = "0";
+			i_DecVal  = ERight(sNumberValue,(sNumberValue.length)-sNumberValue.indexOf(".")-1);
+			if(i_DecVal .length == 1)
+			{
+				i_DecVal = (mid(i_DecVal ,(i_DecVal.indexOf(".")+1),1)) + "0";
+			}
+			else
+			{
+				var strRoundedOff;
+				strRoundedOff = fn_Round_Last_Digit(i_DecVal);
+				i_DecVal = mid(i_DecVal ,0,4);
+				if(strRoundedOff == "IV")
+				{
+					i_PreciseValue = 1;
+					i_DecVal = 0;
+				}
+				else
+				{
+					//i_PreciseValue wouldn't change
+					i_DecVal  = strRoundedOff;
+				}
+			}
+			i_Final_Value = parseFloat(i_PreciseValue) + "." + i_DecVal;
+        }
+//*********************************
+//If there is no decimal place
+        else
+        {
+			i_Final_Value = parseFloat(iNum);						
+        }
+        //****************
+        //Return numeric value
+        return(i_Final_Value);
+}
+
+//************************************************************
+//This function will round the last digit of any number
+//passed to it to two digits
+//Only string values to be passed
+//The passer to this function should check the autheticity 
+//of the number passed to it other wise it returns error
+function fn_Round_Last_Digit(iNum)
+{
+	var iLenNum;
+	var sNum;
+	var iLastDigit;
+	var iNumLessLastDigit;
+	
+	sNum = iNum.toString();
+	iLenNum = sNum.length;
+	
+	if((iLenNum == 1) || (iLenNum == 2))
+	{
+		//document.writeln("Tell me");
+		return(iNum);
+	}
+	else if(iLenNum > 2)
+	{
+	//document.writeln("Hello");
+	//***************************************
+		//document.writeln(sNum);
+		iLastDigit = Right(sNum,1);
+		iNumLessLastDigit = Left(sNum,iLenNum - 1);
+		//if the passed value starts with 0
+		if(sNum.indexOf("0") == 0)
+		{
+			if(iLastDigit < 5)
+			{
+				return(iNumLessLastDigit);
+			}
+			else
+			{
+				var iTemp;
+				iTemp = Right(iNumLessLastDigit,1);
+					if(iTemp == "9")
+					{
+						return("10");
+					}
+				else
+				{
+					return("0" + (parseInt(iTemp) + 1));
+				}
+			}
+			
+		}
+	//***************************************	
+	//If the passed value starts with 9
+		else if(sNum.indexOf("9") == 0)
+		{
+			var iTemp;
+			iTemp = Right(iNumLessLastDigit,1);	//Specifically for 3 digit numbers the second number
+
+			//document.writeln(iTemp);
+			//***************************
+			if(iTemp == "9")
+			{
+				if(iLastDigit >= 5)
+				{
+					return "IV";	//	Means increment Value before decimal 
+				}
+				else
+				{
+					return("99") 
+				}
+				
+			}
+			else
+			{
+				if(iLastDigit >= 5)
+				{
+					return("9" + (parseInt(iTemp) + 1));
+				}
+				else
+				{	
+					return("9" + iTemp);
+				}
+			}
+			//***************************
+		}
+		else
+		{
+			iLastDigit = Right(sNum,1);
+			if(iLastDigit < 5)
+			{
+				return(parseFloat(iNumLessLastDigit));
+			}
+			else
+			{
+				iNumLessLastDigit = (parseInt(iNumLessLastDigit) + 1)
+				return(iNumLessLastDigit);
+			}
+		}
+	}
+}
+
+//*****************Validation Coded appended here **********************/
+
+//**This function used for allowing entering only numbers and dots. 
+      	function numOnly() 
+      	{
+          if(!((event.keyCode>=48)&&(event.keyCode<=57)))
+          {
+              event.keyCode=0;
+          }
+          else event.keyCode = event.keyCode;
+       	}
+
+        function numCharsOnly()
+        {
+         if(event.keyCode >=97 && event.keyCode<=122)
+           event.keyCode = event.keyCode;
+         if((event.keyCode>=48)&&(event.keyCode<=57)||(event.keyCode>=65)&&(event.keyCode<=90)
+          ||(event.keyCode>=97)&&(event.keyCode<=122)||(event.keyCode==95)) 
+         event.keyCode = event.keyCode;
+        else
+          event.keyCode=0;
+        }
+
+
+	//** This function used for check leap year or not.
+  	function leapYear(year)
+  	{
+      	  if(((year%4==0)&&(year%100!=0))||((year%100==0)&&(year%400==0)))
+     	  {
+        	return true;
+     	  }
+     	  else
+     	  {
+       		return false;
+     	  }
+  	}
+  
+
+function LTrim(str){
+	if (str==null){return null;}
+	for(var i=0;str.charAt(i)==" ";i++);
+	return str.substring(i,str.length);
+	}
+function RTrim(str){
+	if (str==null){return null;}
+	for(var i=str.length-1;str.charAt(i)==" ";i--);
+	return str.substring(0,i+1);
+	}
+function Trim(str){return LTrim(RTrim(str));}
+function LTrimAll(str) {
+	if (str==null){return str;}
+	for (var i=0; str.charAt(i)==" " || str.charAt(i)=="\n" || str.charAt(i)=="\t"; i++);
+	return str.substring(i,str.length);
+	}
+function RTrimAll(str) {
+	if (str==null){return str;}
+	for (var i=str.length-1; str.charAt(i)==" " || str.charAt(i)=="\n" || str.charAt(i)=="\t"; i--);
+	return str.substring(0,i+1);
+	}
+function TrimAll(str) {
+	return LTrimAll(RTrimAll(str));
+	}
+//-------------------------------------------------------------------
+// isNull(value)
+//   Returns true if value is null
+//-------------------------------------------------------------------
+function isNull(val){return(val==null);}
+
+//-------------------------------------------------------------------
+// isBlank(value)
+//   Returns true if value only contains spaces
+//-------------------------------------------------------------------
+function isBlank(val){
+	if(val==null){return true;}
+	for(var i=0;i<val.length;i++) {
+		if ((val.charAt(i)!=' ')&&(val.charAt(i)!="\t")&&(val.charAt(i)!="\n")&&(val.charAt(i)!="\r")){return false;}
+		}
+	return true;
+	}
+
+
+//-------------------------------------------------------------------
+// setNullIfBlank(input_object)
+//   Sets a form field to "" if it isBlank()
+//-------------------------------------------------------------------
+function setNullIfBlank(obj){if(isBlank(obj.value)){obj.value="";}}
+
+//-------------------------------------------------------------------
+// setFieldsToUpperCase(input_object)
+//   Sets value of form field toUpperCase() for all fields passed
+//-------------------------------------------------------------------
+function setFieldsToUpperCase(){
+	for(var i=0;i<arguments.length;i++) {
+		arguments[i].value = arguments[i].value.toUpperCase();
+		}
+	}
+
+//-------------------------------------------------------------------
+// disallowBlank(input_object[,message[,true]])
+//   Checks a form field for a blank value. Optionally alerts if 
+//   blank and focuses
+//-------------------------------------------------------------------
+function disallowBlank(obj){
+	var msg=(arguments.length>1)?arguments[1]:"";
+	var dofocus=(arguments.length>2)?arguments[2]:false;
+	if (isBlank(getInputValue(obj))){
+		if(!isBlank(msg)){alert(msg);}
+		if(dofocus){
+			if (isArray(obj) && (typeof(obj.type)=="undefined")) {obj=obj[0];}
+			if(obj.type=="text"||obj.type=="textarea"||obj.type=="password") { obj.select(); }
+			obj.focus();
+			}
+		return true;
+		}
+	return false;
+	}
+
+//-------------------------------------------------------------------
+// disallowModify(input_object[,message[,true]])
+//   Checks a form field for a value different than defaultValue. 
+//   Optionally alerts and focuses
+//-------------------------------------------------------------------
+function disallowModify(obj){
+	var msg=(arguments.length>1)?arguments[1]:"";
+	var dofocus=(arguments.length>2)?arguments[2]:false;
+	if (getInputValue(obj)!=getInputDefaultValue(obj)){
+		if(!isBlank(msg)){alert(msg);}
+		if(dofocus){
+			if (isArray(obj) && (typeof(obj.type)=="undefined")) {obj=obj[0];}
+			if(obj.type=="text"||obj.type=="textarea"||obj.type=="password") { obj.select(); }
+			obj.focus();
+			}
+		setInputValue(obj,getInputDefaultValue(obj));
+		return true;
+		}
+	return false;
+	}
+
+//-------------------------------------------------------------------
+// commifyArray(array)
+//   Take an array of values and turn it into a comma-separated string
+//-------------------------------------------------------------------
+function commifyArray(obj){
+	var s="";
+	if(obj==null||obj.length<=0){return s;}
+	for(var i=0;i<obj.length;i++){
+		s=s+((s=="")?"":",")+obj[i].toString();
+		}
+	return s;
+	}
+
+
+//-------------------------------------------------------------------
+// isChanged(input_object)
+//   Returns true if input object's value has changed since it was
+//   created.
+//-------------------------------------------------------------------
+function isChanged(obj){return(getInputValue(obj)!=getInputDefaultValue(obj));}
+
+	
+//-------------------------------------------------------------------
+// isFormModified(form_object,hidden_fields,ignore_fields)
+//   Check to see if anything in a form has been changed. By default
+//   it will check all visible form elements and ignore all hidden 
+//   fields. 
+//   You can pass a comma-separated list of field names to check in
+//   addition to visible fields (for hiddens, etc).
+//   You can also pass a comma-separated list of field names to be
+//   ignored in the check.
+//-------------------------------------------------------------------
+function isFormModified(theform,hidden_fields,ignore_fields){
+	if(hidden_fields==null){hidden_fields="";}
+	if(ignore_fields==null){ignore_fields="";}
+	var hiddenFields=new Object();
+	var ignoreFields=new Object();
+	var i,field;
+	var hidden_fields_array=hidden_fields.split(',');
+	for (i=0;i<hidden_fields_array.length;i++) {
+		hiddenFields[Trim(hidden_fields_array[i])]=true;
+		}
+	var ignore_fields_array=ignore_fields.split(',');
+	for (i=0;i<ignore_fields_array.length;i++) {
+		ignoreFields[Trim(ignore_fields_array[i])]=true;
+		}
+	for (i=0;i<theform.elements.length;i++) {
+		var changed=false;
+		var name=theform.elements[i].name;
+		if(!isBlank(name)){
+			var type=theform[name].type;
+			if(!ignoreFields[name]){
+				if(type=="hidden"&&hiddenFields[name]){changed=isChanged(theform[name]);}
+				else if(type=="hidden"){changed=false;}
+				else {changed=isChanged(theform[name]);}
+				}
+			}
+		if(changed){return true;}
+		}
+		return false;
+	}
+	
+	
+	
+	/**************************Ended Here*************************************/
+	
+	function RoundToFixedDecimal(n,d){
+	
+	var tenpow = Math.pow(10,d)
+		return Math.round(n*tenpow)/tenpow ;
+}
+
+
+
+	function convertToDecimal(id,input,fieldtype,fieldtype2) {
+
+		if(fieldtype != null && fieldtype != undefined && (fieldtype == 'currency' || fieldtype == 'decimal' || fieldtype == 'percentage' || fieldtype2 == 'currency' || fieldtype2 == 'decimal' || fieldtype2 == 'percentage'))
+		{
+		
+			input = input.replace(/[^0-9.-]/g, '');
+		    if (input.startsWith('.')) {
+		        input = '0' + input;
+		    }
+		    else if (input.charAt(input.length - 1) !== '.' || input.charAt(input.length - 1) === '.') {
+		    	if(input.endsWith('.')){
+		    		input += '00';
+		    	}else if(!input.endsWith('.') && !input.includes(".")){
+		    		input += '.00';
+		    	}
+		    	
+		    }
+		    $("#"+id).val(input);
+			
+		}
+		
+	    
+	}
+
+
+
+

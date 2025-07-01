@@ -1,0 +1,606 @@
+var INPUT_SEPERATOR = "~~~~";
+var SCH_FIELD_SEPERATOR = "~~~";
+var FIELD_SEPERATOR = "~~";
+
+function escapeRegExp(string){
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+ 
+function replaceAll1(str, term, replacement) {
+	var demo = str.replace(new RegExp(escapeRegExp(term), 'g'), replacement);
+  return demo;
+}
+
+
+function getAttrType1(attr,type) {
+	var temp, array;
+	var validJson = {};
+	attr = $.trim(attr);
+	var index=attr.indexOf("{");
+	attr=attr.substr(index,attr.length-1);
+	attr = attr.slice(1, -1);
+	array = attr.split(",");
+	for ( var keyVal in array) {
+		temp = array[keyVal].split("=");
+		validJson[$.trim(temp[0])] = (typeof temp[1] == "undefined") ? "" : $
+				.trim(temp[1]);
+	}
+	var type = validJson[type]
+	// alert(type);
+	return type;
+}
+function getAttrType(attr,type) {
+	var temp, array;
+	var validJson = {};
+	attr = $.trim(attr);
+	attr = attr.slice(1, -1);
+	array = attr.split(",");
+	for ( var keyVal in array) {
+		temp = array[keyVal].split("=");
+		validJson[$.trim(temp[0])] = (typeof temp[1] == "undefined") ? "" : $
+				.trim(temp[1]);
+	}
+	var type = validJson[type]
+	return type;
+}
+
+function dataScheduleCalculate(rowData){
+	
+	var j={};
+	var dataMap1=new Map();
+	if (rowData != null || rowData.trim() != "") {
+		var rowdataArray=rowData.split(INPUT_SEPERATOR);
+		var rowdataResult=rowdataArray[rowdataArray.length-1];
+		var rowdataResultArray=rowdataResult.split(SCH_FIELD_SEPERATOR); 
+		for (var i = 0; i < rowdataResultArray.length; i++) {
+			var calData = rowdataResultArray[i].split(FIELD_SEPERATOR);
+			var dataValue="";
+			if(calData[1]!=null && calData[1].trim()!="null" && calData[1].trim()!=""){
+				dataValue=calData[1].trim();
+			}
+			dataMap1.set(calData[0].trim(),dataValue);
+		}
+		var grandTotal = parseFloat(0);
+		var netAmount = parseFloat(0);
+		var dataMap=new Map();
+		var dataArray=[];
+		for (var i = 0; i < rowdataArray.length-1; i++) {
+			var ItemTotal = rowdataArray[i].split(FIELD_SEPERATOR);
+			var temp = parseFloat(0);
+			if(ItemTotal[1]!=null && "null" != ItemTotal[1].trim() && "Not Applicable" != ItemTotal[1].trim()){
+				temp=parseFloat(ItemTotal[1].trim());
+			}
+			grandTotal += temp;
+			dataMap.set(ItemTotal[0].trim(), ItemTotal[1].trim());
+			dataArray.push(ItemTotal[0].trim());
+		}
+		
+		
+		var grandTotalAfterDeduction =parseFloat(0);
+		if(dataMap1.get("tenderFormulaExp")!="" && dataMap1.get("tenderFormulaExp")!="undefined" && dataMap1.get("tenderFormulaExp")!=undefined){
+			grandTotal=parseFloat(0);
+			var formulaExp="";
+			if(dataMap1.get("tenderFormulaExp")!=null && dataMap1.get("tenderFormulaExp")!="null" && dataMap1.get("tenderFormulaExp")!=""){
+				formulaExp=dataMap1.get("tenderFormulaExp");
+			}
+			if(formulaExp!="" &&  dataArray.length>0){
+				for(var i=0;i<dataArray.length;i++){
+					var val=dataArray[i].split("_");
+					formulaExp=replaceAll1(formulaExp, "schid_"+val[1], dataMap.get(dataArray[i]));
+				}
+				grandTotal=parseFloat(0);
+				
+				try {
+					grandTotal=eval(formulaExp);
+					
+					}
+					catch (e) {
+						grandTotal=parseFloat(0);
+					}
+					grandTotal=grandTotal.toFixed(2);
+					j["scheduletotal"]=grandTotal;
+					if(grandTotal >0){
+						var numtoword=convert(grandTotal);
+						j["scheduletotalw"]=numtoword;
+					}
+				if(grandTotal > 0 && dataMap1.get("checktenderfixeddeduction")==="1"){
+					
+					try {
+						var value=grandTotal-parseFloat(dataMap1.get("tenderfixeddeduction"));
+						grandTotalAfterDeduction=parseFloat(value);
+					} catch (e) {
+						grandTotalAfterDeduction=parseFloat(0);
+					}
+					
+				}else{
+					grandTotalAfterDeduction=grandTotal;
+				}
+				
+			}
+			
+		}else{
+			grandTotalAfterDeduction=grandTotal;
+			j["scheduletotal"]=grandTotal.toFixed(2)
+			if(grandTotal >0){
+				var numtoword=convert(grandTotal.toFixed(2));
+				j["scheduletotalw"]=numtoword
+			}
+		}
+		
+		if(grandTotalAfterDeduction >0 && dataMap1.get("checktenderrebate")==="Applicable"){
+			try {
+			var rebate=parseFloat(0);
+			if(dataMap1.get("tenderrebate")!=null && dataMap1.get("tenderrebate")!=""){
+				rebate=parseFloat(dataMap1.get("tenderrebate"));
+			}
+				var exp1=parseFloat(grandTotalAfterDeduction)+"-"+((parseFloat(grandTotalAfterDeduction)+"*"+rebate)+"/100");
+				netAmount=eval(exp1)
+				netAmount=netAmount.toFixed(2);
+				j["tendernetamount"]=netAmount;
+				if(netAmount > 0){
+					var numtoWord=convert(netAmount);
+					j["tendernetamountw"]=numtoWord;
+				}
+			} catch ( e) {
+				
+			}
+		}else{
+			
+			
+			
+			
+			netAmount=parseFloat(grandTotalAfterDeduction).toFixed(2);
+			j["tendernetamount"]=netAmount;
+			if(netAmount >0){
+				var numtoword=convert(netAmount);
+				j["tendernetamountw"]=numtoword;
+			}
+		}
+	
+		return JSON.stringify(j);
+	}
+}
+function dataCalculation(rowData) {
+	var j={};
+	if (rowData != null || rowData.trim() != "") {
+		var fieldIdentifier='';
+var inputs=rowData.split(INPUT_SEPERATOR);
+var dataMap=new Map();
+
+if(inputs!=null && inputs.length>0){
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		if(fields[2] !=null && fields[2] !=undefined && fields[2].trim() !="" && fields[2].trim()!="null"){
+			var keyArr=fields[0].split("_");
+			var temp = "#" + keyArr[2].trim() + "#" ;
+			dataMap.set(temp,fields[2].trim());
+			
+		}
+	}
+	for(var i=0;i<inputs.length;i++){
+		
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		if(i==0){
+		fieldIdentifier=fields[0]+"_"+fields[1]+"_";
+		}
+		var formulaValue=getAttrType(fields[1],"FORMULA");
+		
+		if(formulaValue!=null && formulaValue!=undefined && formulaValue!="null" && formulaValue.trim()!="N/A" && formulaValue != ''){
+			var forTest = "#" + formulaValue.replace(/ /g, "#") + "#";
+			
+			var exp= forTest;
+			dataMap.forEach(function(value, key) {				
+				exp=replaceAll1(exp, key, value);
+			});
+			
+			var expTest = exp.replace(/#/g,"");
+
+			
+			
+			var eva='';
+				try {
+					
+					eva=eval(expTest);
+					eva=eva.toFixed(2);
+					j[fields[0]]=eva;
+					var keyArr1=fields[0].split("_");					
+					dataMap.set(keyArr1[2].trim(),eva.trim());
+					}
+					catch (e) {
+					}
+			
+		}
+		else if(getAttrType(fields[1], "COLUMNNAME")=="rate"  && getAttrType(fields[1], "ISBASEPRICEFORAUCTION")=="true" && getAttrType(fields[1], "FORMULA")=="N/A")	
+		{
+			j[fields[0]]= dataMap.get("#rate#");
+			
+		}		
+	}
+	
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);		
+		
+		var numtowordValue=getAttrType(fields[1],"NUMBERTOWORD");
+		var datatype=getAttrType(fields[1],"DATATYPE");
+		
+		if(numtowordValue!=null && numtowordValue!=undefined && numtowordValue!="null" && numtowordValue.trim()!="N/A"){
+			var	value;
+			
+			if (numtowordValue=="rate" || datatype == "numbertoword")
+			{
+				value=dataMap.get("#"+numtowordValue.trim()+"#");
+			}
+			else
+			{
+				value=dataMap.get(numtowordValue.trim());	
+			}
+			var numtoword='';
+			if(value!=null && value.trim()!="" && value.trim()!="null"){
+			var numtoword=convert(value);
+			}
+			j[fields[0]]=numtoword;
+		}
+		
+	}
+	
+	
+	
+}
+	}
+	
+	return JSON.stringify(j);
+}
+
+function dataCalculation2(rowData) {
+	var j={};
+	if (rowData != null || rowData.trim() != "") {
+		var fieldIdentifier='';
+var inputs=rowData.split(INPUT_SEPERATOR);
+var dataMap=new Map();
+
+if(inputs!=null && inputs.length>0){
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		if(fields[2] !=null && fields[2] !=undefined && fields[2].trim() !="" && fields[2].trim()!="null"){
+			var keyArr=fields[0].split("_");
+			var temp = "#" + keyArr[2].trim() + "#" ;
+			dataMap.set(temp,fields[2].trim());
+			
+		}
+	}
+	for(var i=0;i<inputs.length;i++){
+		
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		if(i==0){
+		fieldIdentifier=fields[0]+"_"+fields[1]+"_";
+		}
+		var formulaValue=getAttrType(fields[1],"FORMULA");
+		
+		if(formulaValue!=null && formulaValue!=undefined && formulaValue!="null" && formulaValue.trim()!="N/A"){
+			var forTest = "#" + formulaValue.replace(/ /g, "#") + "#";
+			
+			var exp= forTest;
+			
+			dataMap.forEach(function(value, key) {
+				exp=replaceAll1(exp, key, value);
+			});
+		
+			var expTest = exp.replace(/#/g,"");
+			var eva='';
+				try {
+					
+					eva=eval(expTest);
+					eva=eva.toFixed(2);
+					j[fields[0]]=eva;
+					var keyArr1=fields[0].split("_");
+					dataMap.set(keyArr1[2].trim(),eva.trim());
+					}
+					catch (e) {
+					}
+			
+		}
+		else if(getAttrType(fields[1], "COLUMNNAME")=="rate"  && getAttrType(fields[1], "ISBASEPRICEFORAUCTION")=="true" &&getAttrType(fields[1], "FORMULA")=="N/A")	
+		{
+			j[fields[0]]= dataMap.get("rate");
+		}
+	}
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		var numtowordValue=getAttrType(fields[1],"NUMBERTOWORD");
+		if(numtowordValue!=null && numtowordValue!=undefined && numtowordValue!="null" && numtowordValue.trim()!="N/A"){
+			
+			var value=dataMap.get('#'+numtowordValue.trim()+'#');
+			var numtoword='';
+			if(value!=null && value.trim()!="" && value.trim()!="null"){
+			var numtoword=convert(value);
+			}
+			j[fields[0]]=numtoword;
+		}
+		
+	}
+	
+	
+	
+}
+	}
+	
+	return JSON.stringify(j);
+}
+
+
+function dataCalculation1(rowData) {
+	var j={};
+	if (rowData != null || rowData.trim() != "") {
+		var fieldIdentifier='';
+var inputs=rowData.split(INPUT_SEPERATOR);
+var dataMap1=new Map();
+var num=0;
+if(inputs!=null && inputs.length>0){
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		if(fields[2] !=null && fields[2] !=undefined && fields[2].trim() !="" && fields[2].trim()!="null"){
+			var keyArr=fields[0].split("_");
+			if(fields[2]!=null && fields[2]!=undefined && fields[2].trim()!="" && $.isNumeric(fields[2].trim())){
+				dataMap1.set(fields[0].trim(),fields[2].trim());
+			}else{
+				dataMap1.set(fields[0].trim(),'');
+			}
+		}
+	}
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		
+		var j1 = fields[0].split("_");
+		var otherValue = j1[2];
+		var formulaValue=getAttrType1(fields[1],"FORMULA");
+		if(formulaValue!=null && formulaValue!=undefined && formulaValue!="null" && formulaValue.trim()!="N/A"){
+			var keyArr=fields[0].split("_");
+			
+			fieldIdentifier=keyArr[0]+"_"+keyArr[1];
+			var exp=formulaValue;
+			dataMap1.forEach(function(value, key) {
+				var keyArr=key.split("_");
+				var left = "ROW"+otherValue.split("ROW")[1];
+				var right = "ROW"+keyArr[2].split("ROW")[1];
+				if(left == right){
+					exp=replaceAll1(exp, key.trim(), value);
+					var keyArr=key.split("_");
+					exp=replaceAll1(exp, keyArr[2].trim(), value);
+				}
+			});
+			
+			var formulaColDataType = $('#'+fields[0]).attr("data-validation-type");
+			var eva='';
+				try {
+					eva=eval(exp);
+					if(eva.toString().indexOf(".") > -1){
+						if(formulaColDataType == 'decimal'){
+							eva=eva.toFixed(4);
+						}else if(formulaColDataType == 'currency'){
+							eva=eva.toFixed(4);
+						}else{
+							eva=eva.toFixed(4);
+						}
+						
+					}else{
+						eva=eva.toFixed(0);
+					}
+					if(eva==='Infinity' || eva==='NaN'){
+						eva='';
+					}
+						j[fields[0]]=eva;
+							if($.isNumeric(eva)){
+								dataMap1.set(fields[0].trim(),eva);
+							}
+					}catch (e) {
+						 console.log(e);
+					}
+					
+		}
+		
+	}
+	for(var i=0;i<inputs.length;i++){
+		var fields=inputs[i].split(FIELD_SEPERATOR);
+		var numtowordValue=getAttrType(fields[1],"NUMBERTOWORD");
+		if(numtowordValue!=null && numtowordValue!=undefined && numtowordValue!="null" && numtowordValue.trim()!="N/A"){
+			
+			var value=dataMap.get(numtowordValue.trim());
+			var numtoword='';
+			if(value!=null && value.trim()!="" && value.trim()!="null"){
+			var numtoword=convert(value);
+			}
+			j[fields[0]]=numtoword;
+		}
+	}
+}
+	}
+	return JSON.stringify(j);
+}
+
+
+function sorcalculate(rowData){
+	var j={};
+	var dataMap=new Map();
+	if (rowData != null || rowData.trim() != "") {
+		var inputs=rowData.split(INPUT_SEPERATOR);
+		if(inputs!=null && inputs.length>0){
+			for (var i = 0; i < inputs.length-1; i++) {
+				if(inputs[i]!=null && inputs[i]!=""){
+				var fields = inputs[i].split("~~");
+				if(fields[0]!=null && fields[0]!=undefined && fields[0]!=""){
+				dataMap.set(fields[0], fields[1]);
+				}
+				}
+				
+			}
+		}
+			var quantity = "1";
+			var estimatedrate="0";
+			var sorvalue="0";
+			try {
+			var i=1;
+			dataMap.forEach(function(value, key) {
+				if(key==="quantity"){
+					quantity=value;
+				}
+				if(i==(dataMap.size-3)){
+					estimatedrate=value;
+				}
+				if(i==(dataMap.size-2)){
+					var eva=eval(quantity+"*"+estimatedrate);
+					eva=eva.toFixed(2);
+					j[key]=eva;
+				}
+				if(i==(dataMap.size-1)){
+					sorvalue=value;
+				}
+				if(i==(dataMap.size)){
+					var eva=eval(quantity+"*"+sorvalue);
+					eva=eva.toFixed(2);
+					j[key]=eva;
+				}
+				i++;
+			
+			});
+			
+				
+			} catch (e) {
+			}
+	}
+	
+	return JSON.stringify(j);
+}
+
+function sortotalCalculate(rowData){
+	var j={};
+	var dataMap=new Map();
+	if (rowData != null || rowData.trim() != "") {
+		var finalestimatetotal = parseFloat(0);
+		var finalsortotal=parseFloat(0);
+		var inputs=rowData.split(INPUT_SEPERATOR);
+		if(inputs!=null && inputs.length>0){
+			for (var i = 0; i < inputs.length-1; i++) {
+			var temp=inputs[i].split("~~");
+			if(i%2==0){
+				finalestimatetotal +=parseFloat(temp[1]);
+			}else{
+				finalsortotal +=parseFloat(temp[1]);
+			}
+			}
+		}
+		finalestimatetotal=finalestimatetotal.toFixed(2);
+		finalsortotal=finalsortotal.toFixed(2);
+		j["finalestimatetotal"]=finalestimatetotal;
+		j["finalsortotal"]=finalsortotal;
+	}
+	
+	return JSON.stringify(j);
+
+}
+
+function boqtotalcalculate(rowData){
+	var j={};
+	if (rowData != null || rowData.trim() != "") {
+		var totalSum=parseFloat(0);
+			var rowdataArray=rowData.split("~~~~");
+			if(rowdataArray!=null && rowdataArray.length>0){
+				for (var i = 0; i < rowdataArray.length; i++) {
+					var itemTotal = rowdataArray[i].split("~~");
+					if(itemTotal[1]!=null && itemTotal[1].trim()!="null" && itemTotal[1].trim()!="" && itemTotal[1]!=NaN && itemTotal[1]!="NaN") {
+					totalSum += parseFloat(itemTotal[1]);
+					
+					}
+				}
+			}
+			
+			totalSum= totalSum.toFixed(2);
+			j["resultdata"]=totalSum.toString();
+			
+	}
+	return JSON.stringify(j);
+}
+
+
+function mapnumbertoword(rowData){
+	var j={};
+	if(rowData!=null && rowData!=""){
+	var data=rowData.split(INPUT_SEPERATOR);
+	for (var i = 0; i < data.length; i++) {
+		var datatemp=data[i].split(SCH_FIELD_SEPERATOR);
+		if(datatemp!=null && datatemp.length>=2 && datatemp[1].trim()!=""){
+			var numtoword=convert(datatemp[1]);
+			j[datatemp[0]]=numtoword;
+		}
+	}
+	}
+	return JSON.stringify(j);
+}
+
+function numbertoword(rowData){
+	var j={};
+	if(rowData!=null && rowData!=""){
+		var data=rowData.split("~~~");
+		if(data!=null && data.length>=2 && data[1].trim()!=""){
+			var numtoword=convert(data[1]);
+			j[data[0]]=numtoword;
+		}
+			return JSON.stringify(j);
+}
+}
+
+function dataSum(rowData){
+	var j={};
+	if(rowData!=null && rowData!=""){
+		try{
+		var value=eval(rowData);
+		j["result"]=value;
+		}catch(e){
+			j["result"]="";
+		}
+	}else{
+		j["result"]="";
+	}
+	return JSON.stringify(j);
+}
+
+
+function sectionCalculate(rowData){
+	var j={};
+	var dataMap=new Map();
+	var fieldArray=[];
+	if(rowData!=null && rowData!=""){
+		 var rowdataArray=rowData.split(INPUT_SEPERATOR);
+		 for (var i = 0; i < rowdataArray.length-1; i++) {
+				var data = rowdataArray[i].split(FIELD_SEPERATOR);
+				if(data[1]!=null && data[1].trim()!=""){
+					dataMap.set(data[0].trim(),data[1]);
+				}else{
+					dataMap.set(data[0].trim(),"");
+				}
+				fieldArray.push(data[0].trim());
+			}
+		var resultArr=rowdataArray[0].split(FIELD_SEPERATOR);
+		var formulaExp=resultArr[1];
+		for (var i = 0; i < fieldArray.length; i++) {
+			 if(fieldArray[i]!=null && fieldArray[i]!="" && $.isNumeric(fieldArray[i])==false){
+				 formulaExp=replaceAll1(formulaExp, fieldArray[i], dataMap.get(fieldArray[i])+"");
+			 }
+		 }
+		 try {
+				var e=eval(formulaExp);
+				var e1=e.toString();
+				 var res = e1.split(".");
+				
+				 if(res.length >1)
+					{
+				 e=e.toFixed(2);
+					}else {
+						 e=e.toFixed(0);
+					}
+			j[resultArr[0]]=e;
+			
+		} catch ( e) {
+		}
+	}
+	return JSON.stringify(j);
+}

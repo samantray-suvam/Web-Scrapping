@@ -1,0 +1,94 @@
+jQuery(document).ready(function($)
+{
+$(".account").click(function()
+{
+var X=$(this).attr('id');
+
+if(X==1)
+{
+$(".submenu").hide();
+$(this).attr('id', '0');	
+}
+else
+{
+
+$(".submenu").show();
+$(this).attr('id', '1');
+}
+	
+});
+
+//Mouseup textarea false
+$(".submenu").mouseup(function()
+{
+return false
+});
+$(".account").mouseup(function()
+{
+return false
+});
+
+
+//Textarea without editing.
+$(document).mouseup(function()
+{
+$(".submenu").hide();
+$(".account").attr('id', '');
+});
+	
+});// JavaScript Document
+
+
+/*=====================================
+			NOTIFICATION
+=====================================*/
+
+ $(document).ready(function()
+         {
+         $("#notificationLink").click(function()
+         {
+         $(".notificationContainer").hide();
+         $("#notipop").fadeToggle(300);
+         $(".notification_count").fadeOut("slow");
+         return false;
+         });
+         
+         $("#notificationLink1").click(function()
+         {	
+         $(".notificationContainer").hide();
+         $("#notipop1").fadeToggle(300);
+         $(".notification_count1").fadeOut("slow");
+         return false;
+         });
+         
+         //Document Click
+         $(document).click(function()
+         {
+         $("#notipop").hide();
+         });
+        // //Popup Click
+//         $("#notipop").click(function()
+//         {
+//         return false
+//         });
+         
+         });
+         $("#notificationLink1").click(function()
+         {
+         $("#notipop1").fadeToggle(300);
+         $(".notification_count1").fadeOut("slow");
+         return false;
+         });
+         
+         //Document Click
+         $(document).click(function()
+         {
+         $("#notipop1").hide();
+         });
+         //Popup Click
+         $("#notipop1").click(function()
+         {
+         return false
+         });
+    
+	

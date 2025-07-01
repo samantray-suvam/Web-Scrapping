@@ -1,0 +1,1480 @@
+'use strict';
+var uibModalInstance=null;
+var signcal=null;
+var SerialNo="";
+var certSerialNo="";
+var signData="";
+	var sel="";
+postApp.controller('amendmentCtrl', ['$scope','$window', '$http',  'DTOptionsBuilder'  ,'DTColumnBuilder' ,'fileUpload','$uibModal',
+   function($scope,$window, $http,DTOptionsBuilder,DTColumnBuilder,fileUpload,$uibModal)
+                                  {
+	setTimeout(function(){
+		
+	},10);
+
+	 var serachenable=0; 
+	 var vm = this;   
+	  $scope.flag=false;
+	
+	  var specialCharacters="'%=@<>:*\"/\--/\#/?/|\&~^";
+
+ 	 function checkSpecialCharacter(docName){
+ 	 	var temp = docName.includes("--");
+ 	 	var temp1 = docName.includes("\'");
+ 	 	var temp2 = docName.includes("&");
+ 	 	var temp3 = docName.includes("/");
+ 	 	var temp4 = docName.includes("*");
+ 	 	var temp5 = docName.includes("%");
+ 	 	var temp6 = docName.includes("@");
+ 	 	var temp7 = docName.includes("<");
+ 	 	var temp8 = docName.includes(">");
+ 	 	var temp9 = docName.includes("?");
+ 	 	var temp10 = docName.includes(",");
+ 	 	var temp11 = docName.includes("+");
+ 	 	var temp12 = docName.includes("\"");
+ 	 	var temp13 = docName.includes("=");
+ 	 	var temp14 = docName.includes("#");
+ 	 	var temp15 = docName.includes("~");
+ 	 	
+ 	 	if(temp || temp1 || temp2 || temp3 || temp4 || temp5 || temp6 || temp7 || temp8 || temp9 || temp10 || temp11 || temp12 || temp13 || temp14 || temp15){
+ 	 		for(var j=0;j<specialCharacters.length;j++){
+ 	 			if(docName.indexOf(specialCharacters[j]) > -1 && docName.indexOf(specialCharacters[j]) == '-' && docName.indexOf(specialCharacters[j]) != '\''
+ 	 				&& docName.indexOf(specialCharacters[j]) != '&' && docName.indexOf(specialCharacters[j]) != '/' && docName.indexOf(specialCharacters[j]) != '*' 
+ 	 				&& docName.indexOf(specialCharacters[j]) != '%' && docName.indexOf(specialCharacters[j]) != '@' && docName.indexOf(specialCharacters[j]) != '<' 
+ 	 				&& docName.indexOf(specialCharacters[j]) != '>' && docName.indexOf(specialCharacters[j]) != '?' && docName.indexOf(specialCharacters[j]) != ',' 
+ 	 				&& docName.indexOf(specialCharacters[j]) != '+' && docName.indexOf(specialCharacters[j]) != '\"' && docName.indexOf(specialCharacters[j]) != '=' 
+ 	 				&& docName.indexOf(specialCharacters[j]) != '#' && docName.indexOf(specialCharacters[j]) != '~' ){
+ 	 				return false;
+ 	 			} else {
+ 	 				return true;
+ 	 			}
+ 	 		}
+ 	 	}
+ 	 	
+ 	 	return false;
+ 	 }	
+	
+		
+$scope.savefileuplaod=function(){
+	 $('#loader-icon').show();
+	  		 var file = $scope.amendup.amenddoc;
+	  		var sizecheck=0;
+	  		var docvalue = document.getElementById("doc").value;
+	  		var kk=docvalue.split('\\').pop();
+	  		
+	  		  if(file==null || file ==undefined || file==""){
+	  			 alert("Please attach file");
+	  			 return false;
+	  		  }
+	  		  if(kk != "" && checkSpecialCharacter(kk)==true){
+	  				alert("File Name Cannot Accept Special Characters Like ( ' % @ < > * ? / &  , -- + \" = # ~) ");
+	  				$(".custom-file-upload-hidden").val('');
+	    			$(".filenameid").removeAttr("title");
+	    			$(".filenameid").val('');
+	   		  		$scope.amendup.amenddoc="";
+	   		  		document.getElementById("doc").value="";
+	    			$('#loader-icon').hide();
+	  				return false;
+	  	       }
+	  			 if(kk != "" && kk.length>70){
+	  				  alert("File name should not be greater than 70 characters.");
+	  				  $(".custom-file-upload-hidden").val('');
+	    			  $(".filenameid").removeAttr("title");
+	    			  $(".filenameid").val('');
+	   		  		  $scope.amendup.amenddoc="";
+	   		  		  document.getElementById("doc").value="";
+	    			  $('#loader-icon').hide();
+	  				  return false;
+	  			 }
+	  			 
+	  			 $("#doc").each(function(){
+	  				if($(this).val()==undefined || $(this).val().trim()==""){
+	  					flag= true;
+	  				}else if(this.files[0].size/1024/1024>=10){
+	  					sizecheck=1;
+	  					this.value = "";
+	  				}
+	  		    });
+	  			if(sizecheck==1){
+	  			   $('#loader-icon').hide();
+	  	           alert(" Maximum file size to upload is 10 MB.");
+	  	           $("#doc").val("");
+	  	           $scope.amendup.amenddoc="";
+	  	           $(".filenameid").val("");
+	  	           return false;
+	  	    }
+	  			 
+	  		 var jspname="TENDERDOC";
+	  		 fileUpload.uploadFileToUrl(file, jspname).then(function(data) {
+	  			
+	  		 if(data.RESULT=='OK')
+	  		 {
+	  			 
+	  			 $scope.amendup.amenddoc=data.FILEID;
+	  			 $scope.amendup.amenddochash=data.FILEHASH;
+	  			 var hashedData=$scope.amendup.amenddoc; 
+	  			 var dscDate=$("#dscDateId").val();
+	  			 var jsondata = {"methodName": "signData", "textForSign": $.base64.encode(hashedData), "serilano": $('#loggedusersigningcert').val().toLowerCase(), "ServerDate": dscDate};
+	  				
+	  			    var myurl=getnCodeUrl();
+	  			 $.ajax({
+	  		    		url: myurl,
+	  		    		type: 'POST',
+	  		    		dataType: 'json',
+	  		    		contentType: 'application/json; charset=utf-8',
+	  		    		data: JSON.stringify(jsondata),
+	  		    		async:false,
+	  		    		success: function (result) {
+	  		    			
+	  		    			if(result.flag==true || result.flag==='true'){
+	  		    				console.log(result);   
+	  		    				alert("File Signed successfully.");
+	  		           	  		document.getElementById("sign").value=result.hash;
+	  		           	    	  $scope.amendup.signc=result.hash;
+	  		           	    	  
+	  	    	    		$('#loader-icon').hide();
+	  	        	    		
+	  		    			}else{
+	  		    				alert("please contact help desk");
+	  		    				$(".custom-file-upload-hidden").val('');
+	  		    				$(".filenameid").removeAttr("title");
+	  		    				$(".filenameid").val('');
+	  		   		  		 $scope.amendup.amenddoc="";
+	  		   		  		 document.getElementById("doc").value="";
+	  		    					$('#loader-icon').hide();
+	  		    					
+	  		    			}
+	  		    		}, error: function () {
+	  		    			alert("please contact help desk");
+	  		    			$(".custom-file-upload-hidden").val('');	
+	  		    			$(".filenameid").removeAttr("title");
+	  		    			$(".filenameid").val('');
+	  				  		 $scope.amendup.amenddoc="";
+	  				  		 document.getElementById("doc").value="";
+	  		    	    	$('#loader-icon').hide();
+	  		    		}});
+	  			
+	  			 $('#loader-icon').hide();
+	  		 
+	  		 }
+	  		 else{
+	  			 alert("Some Exception occured");
+	  			// alert(data.ERROR);
+	  			 document.getElementById("doc").value="";
+	  			 $scope.amendup.amenddoc="";
+	  			 $('#loader-icon').hide();
+	  		 }
+	  		});
+}
+
+$scope.savefileuplaodAmendment=function(){
+	$('#loader-icon').show();
+	var sizecheck=0;
+	var file = $scope.amendup.amenddoc;
+	var docvalue = document.getElementById("doc").value;
+	var kk=docvalue.split('\\').pop();
+	
+	  if(file==null || file ==undefined || file==""){
+		 alert("Please attach file");
+		 return false;
+	  }
+	  if(kk != "" && checkSpecialCharacter(kk)==true){
+			alert("File Name Cannot Accept Special Characters Like ( ' % @ < > * ? / &  , -- + \" = # ~) ");
+			$(".custom-file-upload-hidden").val('');
+			$(".filenameid").removeAttr("title");
+			$(".filenameid").val('');
+	  		$scope.amendup.amenddoc="";
+	  		document.getElementById("doc").value="";
+			$('#loader-icon').hide();
+			return false;
+       }
+		 if(kk != "" && kk.length>70){
+			 alert("File name should not be greater than 70 characters.");
+			 $(".custom-file-upload-hidden").val('');
+			 $(".filenameid").removeAttr("title");
+			 $(".filenameid").val('');
+		  	 $scope.amendup.amenddoc="";
+		  	 document.getElementById("doc").value="";
+			 $('#loader-icon').hide();
+			 return false;
+		 }	
+	
+	if($("#fileDocMessage").val() != "" && $("#fileDoc").val() < 10){
+			 alert($("#fileDocMessage").val());
+			 $('#loader-icon').hide();
+			 return false;
+		 }
+		 
+		 $("#doc").each(function(){
+			 
+			 
+			if($(this).val()==undefined || $(this).val().trim()==""){
+            flag= true;
+         }else if(this.files[0].size/1024/1024>=10){
+             	 sizecheck=1;
+             	 this.value = "";
+         }
+			
+	    });
+	
+	
+	if(sizecheck==1){
+		   $('#loader-icon').hide();
+           alert(" Maximum file size to upload is 10 MB.");
+           $("#doc").val("");
+           $scope.amendup.amenddoc="";
+           $(".filenameid").val("");
+           return false;
+    }
+
+  		 
+ 		 var jspname="TENDERDOC";
+ 		 fileUpload.uploadFileToUrl(file, jspname).then(function(data) {
+ 			
+ 		 if(data.RESULT=='OK')
+ 		 {
+ 			 $scope.amendup.amenddoc=data.FILEID;
+ 			 $scope.amendup.amenddochash=data.FILEHASH;
+ 			 var hashedData=$scope.amendup.amenddoc; 
+ 			 var dscDate=$("#dscDateId").val();
+ 			 var jsondata = {"methodName": "signData", "textForSign": $.base64.encode(hashedData), "serilano": $('#loggedusersigningcert').val().toLowerCase(), "ServerDate": dscDate};
+ 				
+ 			    var myurl=getnCodeUrl();
+ 			 $.ajax({
+ 		    		url: myurl,
+ 		    		type: 'POST',
+ 		    		dataType: 'json',
+ 		    		contentType: 'application/json; charset=utf-8',
+ 		    		data: JSON.stringify(jsondata),
+ 		    		async:false,
+ 		    		success: function (result) {
+ 		    			
+ 		    			if(result.flag==true || result.flag==='true'){
+ 		    				console.log(result);   
+ 		    				alert("File Signed successfully.");
+ 		           	  		document.getElementById("sign").value=result.hash;
+ 		           	    	  $scope.amendup.signc=result.hash;
+ 		           	    	  
+ 	    	    		$('#loader-icon').hide();
+ 	        	    		
+ 		    			}else{
+ 		    				alert("please contact help desk");
+ 		    				$(".custom-file-upload-hidden").val('');
+ 		    				$(".filenameid").removeAttr("title");
+ 		    				$(".filenameid").val('');
+ 		   		  		 $scope.amendup.amenddoc="";
+ 		   		  		 document.getElementById("doc").value="";
+ 		    					$('#loader-icon').hide();
+ 		    					
+ 		    			}
+ 		    		}, error: function () {
+ 		    			alert("please contact help desk");
+ 		    			$(".custom-file-upload-hidden").val('');	
+ 		    			$(".filenameid").removeAttr("title");
+ 		    			$(".filenameid").val('');
+ 				  		 $scope.amendup.amenddoc="";
+ 				  		 document.getElementById("doc").value="";
+ 		    	    	$('#loader-icon').hide();
+ 		    		}});
+ 			
+ 			 $('#loader-icon').hide();
+ 		 
+ 		 }
+ 		 else{
+// 			 alert("Some Exception occured");
+ 			 alert(data.ERROR);
+ 			$(".filenameid").val("");
+ 			 document.getElementById("doc").value="";
+ 			 $scope.amendup.amenddoc="";
+ 			 $('#loader-icon').hide();
+ 			$("#fileDocMessage").val(data.ERROR);
+ 		 }
+ 		});
+}
+
+
+
+
+
+
+
+$scope.emptydocfiles=function(){
+	
+
+	$(".file-upload-input").val("");
+		 $scope.amendup.amenddoc=undefined;
+		 document.getElementById("doc").value="";
+	
+
+}
+$scope.reAssignback=function(){
+	 
+		$scope.amendup.ctblTenderBasicInfo=document.getElementById("AmendtenderIdFinalStep").value;
+		$scope.amendup.ctblTenderBasicInfotender=document.getElementById("tenderIdFinalStep").value;
+		$scope.amendup.ctbltenderIdAmend=document.getElementById("tenderIdAmendFinal").value;
+		$scope.amendup.amemdupremarks=document.getElementById("remarks").value;
+		var csrftoken = $("meta[name='_csrf']").attr("content");
+		
+		if($scope.amendup.amemdupremarks=='' || $scope.amendup.amemdupremarks==undefined){
+	 		alert('Please enter remarks..!!!');
+	 		return false;
+	 	}
+		
+
+	 $http({
+	      method  : 'POST',
+	      url     : '/amendment/reAssignBAck?_csrf='+csrftoken,
+	      data    : $scope.amendup
+	     })
+	      .success(function(data) {
+	    	  console.log(data);
+	    	  if(data.RESULT=='success'){
+	    		  //alert("sucess"+$window.location);
+	    		  //$window.location.href='/amendment/pending-for-approval';
+	    		  $("#pendingapprovalid").submit();
+	    	  }
+	    	  else{
+	    		 alert(data.MESSAGE);
+	    	  }
+	      }).error(function (data, status) {
+	          return status;
+	    });
+}
+
+  $scope.saveAmendApproval = function(flagmandatapproval){
+      var signStatus=$("#sign").val();
+	  var file=$scope.amendup.amenddoc; 
+	  var status=$scope.amendup.amendStatus;   
+	  var comment=$scope.amendup.comments;   
+	 //	alert('file=='+file+'status=='+status+'comment=='+comment);
+	  alert(1)
+		if(flagmandatapproval==1)
+			{
+			
+	 	if(file=='' || file==undefined){
+	 		alert('Please Upload file first..!!!');
+	 		return false;
+	 	}else if(signStatus==null || signStatus==undefined || signStatus.trim()==""){
+	 	
+			  alert("Please Sign uploaded Document..!!!");
+			  return false;
+		  }
+	 	else if(status==null || status==''){
+	 		alert('Please select Status.');
+	 		return false;
+	 	}else if(comment==null || comment==''){
+	 		alert('Please fill Comments.');
+	 		return false;
+	 	}}
+		else
+			{
+			if( file!=undefined){
+		 		 if(signStatus==null || signStatus==undefined || signStatus.trim()==""){
+		 			
+				  alert("Please Sign uploaded Document..!!!");
+				  return false;
+			  }
+			}
+		 	 if(status==null || status==''){
+		 		alert('Please select Status.');
+		 		return false;
+		 	}else if(comment==null || comment==''){
+		 		alert('Please fill Comments.');
+		 		return false;
+		 	}
+			}
+		$scope.flag=true;
+	 	$scope.amendup.ctblTenderBasicInfo=document.getElementById("AmendtenderIdFinalStep").value;
+		$scope.amendup.ctblTenderBasicInfotender=document.getElementById("tenderIdFinalStep").value;
+		$scope.amendup.ctbltenderIdAmend=document.getElementById("tenderIdAmendFinal").value;
+		 sel =file+status+comment;
+		
+		 signcal="1";
+			var qs = {data:sel,hashAlg:"3"};
+			var result=b64_sha256(sel);
+			
+			 console.log(result);
+	    		
+  		   $scope.amendup.amendmenthastcode= result;
+  	     window.document.getElementById("amendmenthastcode").value=result;
+  	   	 $scope.amendmenthastcode= result;
+	       	/*$.ajax({
+		    		 url: "http://localhost:9190/data/getHash", 
+		    		 type: "GET",
+		    		 data:qs,
+		    		 success: function(result){
+		    		 console.log(result);
+		    		
+		    		   $scope.amendup.amendmenthastcode= result;
+		    	     window.document.getElementById("amendmenthastcode").value=result;
+		    	   	 $scope.amendmenthastcode= result;
+		    	  	 	uibModalInstance=$uibModal.open({
+	  		         	id: 'complexDialog',
+	  		            title: 'A Complex Modal Dialog',
+	  		          backdrop: 'static',   // This disable for click outside event
+	   	    	    keyboard: false , 
+	  		 			templateUrl: '/TestApplets?certtype=DS',controller: 'amendmentCtrl',scope: $scope
+						});
+		    	     
+		    	    }});*/
+  		$('#loader-icon').show();
+  	   	 
+  	   var hashedData="";
+       if(signcal=="1"){
+    	   hashedData=$scope.amendmenthastcode;
+       }else{
+    	   hashedData=$scope.FILEHASH;
+       }
+       var dscDate=$("#dscDateId").val();
+       var jsondata = {"methodName": "signData", "textForSign": $.base64.encode(hashedData), "serilano": $('#loggedusersigningcert').val().toLowerCase(), "ServerDate": dscDate};
+	   var myurl=getnCodeUrl();
+			
+  	   $.ajax({
+	        url: myurl,
+	        type: 'POST',
+	        dataType: 'json',
+	        contentType: 'application/json; charset=utf-8',
+	        data: JSON.stringify(jsondata),
+	        success: function (result) {
+	        	alert("result:"+result);
+	        	$("#btnLoginId").removeAttr("disabled");
+	        	if(result.flag==true || result.flag==='true'){
+     	    		// console.log("k====="+result);     //alert("result>>> "+result); 
+       	    		//$scope.signData=result;
+       	    		//alert(JSON.stringify(result));
+       	    		$('#loader-icon').show();
+       	    		 $scope.amendup.signCertificateInfo =result.hash;
+       	    		document.getElementById("tenderDatasignId").value=result.hash;
+       	    		 var csrftoken = $("meta[name='_csrf']").attr("content"); 
+       	    		 $http({
+       	    		      method  : 'POST',
+       	    		      url     : '/amendment/saveAmendmentApproval?_csrf='+csrftoken,
+       	    		      data    : $scope.amendup
+       	    		     })
+       	    		      .success(function(data) {
+       	    		    	  alert(JSON.stringify(data));
+       	    		    	  if(data.RESULT=='success'){
+       	    		    		 $('#loader-icon').hide();
+       	    		    		//  alert("sucess"+$window.location);
+       	    		    		  //$window.location.href='/amendment/pending-for-approval';
+       	    		    		 $("#pendingapprovalid").submit();
+       	    		    		
+       	    		    	  }else if(data.RESULT=='successWithRefund'){
+       	    		    		alert("Refund initiated successfully !"); 
+       	    		    		 $('#loader-icon').hide();
+            	    		    		//  alert("sucess"+$window.location);
+            	    		    		  //$window.location.href='/amendment/pending-for-approval';
+            	    		    		 
+        	    		    		 $("#pendingapprovalid").submit();
+            	    		    		
+            	    		   }else{
+       	    		    		 alert(data.RESULT);
+       	    		    		$('#loader-icon').hide();
+       	    		    	  }
+       	    		      }).error(function (data, status) {
+       	    		          return status;
+       	    		    }); 
+       	    		
+       	    		
+       	    		alert("Signed Successfully!!!");
+       	    		$('#loader-icon').hide();
+       	    		
+       	    	  	 
+       	    	    }else{
+	        		 $('#loader-icon').hide();
+			    	  alert(result.msg);
+			    	  $("#btnLoginId").removeAttr("disabled");
+	        	}
+	        }, error: function () {
+	        	 $('#loader-icon').hide();
+		    	  alert("please contact help desk");
+		    	 $("#btnLoginId").removeAttr("disabled");
+	        }});
+ 	  	        
+  	   	 
+  	   	 
+  	   	 
+  	   	 
+			/*$scope.close = function () {  
+				 
+			       uibModalInstance.close();
+			    //   alert(SerialNo+"<====>"+$('#loggedusersigningcert').val().toLowerCase());
+			       console.log(SerialNo+"<====>"+$('#loggedusersigningcert').val().toLowerCase());
+		         if(SerialNo==$('#loggedusersigningcert').val().toLowerCase()){ 
+			       console.log($scope.FILEHASH);
+			       //console.log("currindex--->"+currindex);
+			       var hashedData="";
+			       if(signcal=="1"){
+			    	   hashedData=$scope.amendmenthastcode;
+			       }else{
+			    	   hashedData=$scope.FILEHASH;
+			       }
+			              	var qs = {data:hashedData,alias:certSerialNo};
+			              		 	$.ajax({
+			              	    		 url: "http://localhost:9190/data/signature", 
+			              	    		 type: "GET",
+			              	    		 data:qs,
+			              	    		 success: function(result){
+			              	    		 console.log("k====="+result);     //alert("result>>> "+result); 
+			              	    		// $scope.signData=result;
+			              	    		//alert(JSON.stringify(result));
+			              	    		$('#loader-icon').show();
+			              	    		 $scope.amendup.signCertificateInfo =result;
+			              	    		document.getElementById("tenderDatasignId").value=result;
+			              	    		 var csrftoken = $("meta[name='_csrf']").attr("content"); 
+			              	    		 $http({
+			              	    		      method  : 'POST',
+			              	    		      url     : '/amendment/saveAmendmentApproval?_csrf='+csrftoken,
+			              	    		      data    : $scope.amendup
+			              	    		     })
+			              	    		      .success(function(data) {
+			              	    		    	 // alert(JSON.stringify(data));
+			              	    		    	  if(data.RESULT=='success'){
+			              	    		    		 $('#loader-icon').hide();
+			              	    		    		//  alert("sucess"+$window.location);
+			              	    		    		  //$window.location.href='/amendment/pending-for-approval';
+			              	    		    		 $("#pendingapprovalid").submit();
+			              	    		    		
+			              	    		    	  }
+			              	    		    	  else{
+			              	    		    		 alert(data.RESULT);
+			              	    		    	  }
+			              	    		      }).error(function (data, status) {
+			              	    		          return status;
+			              	    		    }); 
+			              	    		
+			              	    		
+			              	    		alert("Signed Successfully!!!");
+			              	    		
+			              	    	  	 
+			              	    	    }}); 
+			              		 	
+					           }else{
+					        	  
+					    		   alert("Please Select Your Registered certificate.");
+					    	   }
+			          		    };
+			*/
+ 
+ 
+ 
+        
+  };
+          
+         /* $scope.callSigning=function(argument){
+        	  
+        	  
+        	  signcal="1";
+  			var qs = {data:$scope.amendup,hashAlg:"2"};
+  			alert(qs)
+  	       	$.ajax({
+  		    		 url: "http://localhost:9190/data/getHash", 
+  		    		 type: "GET",
+  		    		 data:qs,
+  		    		 success: function(result){
+  		    		 console.log(result);
+  		    		 alert("hashcode"+result);
+  		    	     window.document.getElementById("amendmenthastcode").value=result;
+  		    	   $scope.amendup.amendmenthastcode= result;
+  		    	  	 	uibModalInstance=$uibModal.open({
+  	  		         	id: 'complexDialog',
+  	  		            title: 'A Complex Modal Dialog',
+  	  		          backdrop: 'static',   // This disable for click outside event
+  	   	    	    keyboard: false , 
+  	  		 			templateUrl: '/TestApplets?certtype=DS',controller: 'amendmentCtrl',scope: $scope
+  						});
+  		    	     
+  		    	    }});
+  			return true;
+          }
+*/
+	 
+	    if(document.getElementById('tablstatus')!=null){
+	    	
+
+	    vm.dtOptions = DTOptionsBuilder.newOptions()
+	    
+	    .withOption('sAjaxSource', '/amendment/amendmentList?id='+document.getElementById('tablstatus').value)
+	         .withDataProp('data')
+	       .withOption('filter', false)
+	     .withOption('lengthMenu', [50,100,150])     
+	        .withOption('processing', true)
+	           .withOption('aDataSort', false)
+	        .withOption('serverSide', true)
+	        .withOption('order', [0, 'desc'])
+	        .withOption('autoWidth',false) 
+	        .withOption('fnServerData', function (sSource, aoData, fnCallback) {
+	        	 if(serachenable==1){
+	        	 if($scope.advsearch==true){ 
+	        		 /*alert("---"+ document.getElementById('searchoptioncombo').value);*/
+	        		 var els = document.getElementsByClassName("c1datableserachNORMAL");
+	        	 Array.prototype.forEach.call(els, function(el) {
+	        			   if(el.value!='' && document.getElementById('advstext').value!=''){
+	        				   aoData.push({
+	                               "name": 'SEARCH',
+	                               "value": "NORMAL"
+	                           }); 
+	              	    	 aoData.push({
+	                               "name": 'NMSKEY',
+	                               "value": el.value
+	                           });
+	              	    	 aoData.push({
+	                               "name": 'NMSVALUE',
+	                               "value": document.getElementById('advstext').value,
+	                           });
+	              	    	/* aoData.push({
+	                             "name": 'TYPE',
+	                             "value": document.getElementById('searchoptioncombo').value,
+	                         });*/
+	              	    }else{
+	        				   aoData.push({
+	                               "name": 'SEARCH',
+	                               "value": "NORMAL1"
+	                           }); 
+	              	    	 aoData.push({
+	                               "name": 'NMSKEY',
+	                               "value": el.value
+	                           });
+	              	    	 aoData.push({
+	                               "name": 'NMSVALUE',
+	                               "value": document.getElementById('advstext').value,
+	                           });
+	              	    } 
+	        	 });
+	        	 
+	         }
+	        	 else{
+	        		 var els = document.getElementsByClassName("ui-autocomplete-input"); 
+	        		 aoData.push({
+	        			 "name": 'SEARCH',
+	                     "value": "ADV"
+	                 }); 
+	        		 Array.prototype.forEach.call(els, function(el) {
+	   			  if(el.value!='' ){
+	          	    	 
+	          	    	 aoData.push({
+	                           "name": el.name,
+	                           "value": el.value
+	                       });
+	          	    	 
+	          	    	 
+	          	    }
+	        		 });
+	   		 }
+	         }
+	        	 
+	                
+	        	// serachenable=0;   
+	        	 var csrftoken = $("meta[name='_csrf']").attr("content"); 
+	                $.ajax({
+	                    "dataType": "json",
+	                    "type": "POST",
+	                    "url": '/amendment/amendmentList?_csrf='+csrftoken+'&id='+document.getElementById('tablstatus').value,
+	                    "data": aoData,
+	                    "success": function (json) {
+	                        $scope.tableData = json.data;
+	                        $scope.TagCloud = json.TagCloud;
+	                        $scope.CustCols = json.CustCols;
+	                        $scope.setAutoSearchVariable(json.searchKeyWordDto);
+	                        fnCallback(json);
+	                        $scope.$apply();
+	                    }
+	                });
+	            })      
+	        
+	        .withPaginationType('full_numbers');
+	    
+	    vm.dtColumns = [        
+
+		                DTColumnBuilder.newColumn('1').withTitle('Tender ID'),
+	                    DTColumnBuilder.newColumn('2').withTitle('IFB/Tender Notice No'), 
+	                    DTColumnBuilder.newColumn('3').withTitle('Name of Work/Description of Material').withOption('class','colMinWidth-400'),
+		                DTColumnBuilder.newColumn('4').withTitle('Tender Type'),
+		                
+		                DTColumnBuilder.newColumn('7').withTitle('Location Name'),
+	                    DTColumnBuilder.newColumn('8').withTitle('Department Name'), 
+	                    DTColumnBuilder.newColumn('9').withTitle('Sub-Department Name'),
+		                DTColumnBuilder.newColumn('10').withTitle('Tender Creation Date'),
+		                DTColumnBuilder.newColumn('11').withTitle('ECV'),
+		                DTColumnBuilder.newColumn('12').withTitle('Bid Closing Date'),
+		                
+		                DTColumnBuilder.newColumn('6').withTitle('Action').notSortable()
+		                
+		             
+		              
+		            ];
+	    
+	    }
+		
+	    $scope.setAutoSearchVariable = function(searchKeyWordDto){
+	    	 var searchKeyWordDto = angular.fromJson(searchKeyWordDto);
+	         console.log(searchKeyWordDto);
+	         $scope.advsearch = true;  //Always assume normal case
+	         angular.forEach(searchKeyWordDto, function(value, key) {
+	             if(key == 'search' && value != null && value == 'NORMAL'){
+	            	 $scope.advsearch = true;
+	             }
+	             
+	             if(key == 'search' && value != null && value == 'ADV'){
+	            	 $scope.advsearch = false;
+	             }
+	             
+	             if(key == 'nmskey' && value != null){
+	            	 $scope.selectedValue = value;
+	             }
+	             
+	             if(key == 'nmsvalue' && value != null){
+	            	 angular.element( document.querySelector('#advstext')).val(value);
+	             }
+	             
+	             if(key == 'tenderno' && value != null){
+	            	 angular.element( document.querySelector('#tenderno')).val(value);
+	             }
+	             
+	             if(key == 'tendernoticeno' && value != null){
+	            	 angular.element( document.querySelector('#tendernoticeid')).val(value);
+	             }
+	             
+	             if(key == 'tendertitle' && value != null){
+	            	 angular.element( document.querySelector('#tendertitle')).val(value);
+	             }
+	             
+	             if(key == 'tlocation' && value != null){
+	            	 angular.element( document.querySelector('#location')).val(value);
+	             }
+	             
+	             if(key == 'tdepartment' && value != null){
+	            	 angular.element( document.querySelector('#departmentName')).val(value);
+	             }
+	             
+	             if(key == 'tsubdepartment' && value != null){
+	            	 angular.element( document.querySelector('#subDepartmentName')).val(value);
+	             }
+	             
+	             if(key == 'tproccat' && value != null){
+	            	 angular.element( document.querySelector('#tproccat')).val(value);
+	             }
+	             
+	             if(key == 'tproductcat' && value != null){
+	            	 angular.element( document.querySelector('#tproductcat')).val(value);
+	             }
+	             
+	             if(key == 'tsectorcat' && value != null){
+	            	 angular.element( document.querySelector('#tsectorcat')).val(value);
+	             }
+	             
+	           });
+	    	
+	    }
+		
+		
+		$scope.nested = {};
+	    $scope.nested.dtInstance = {}
+	  
+		 $scope.advsearch=true;
+	    $scope.advsearchClick=function(){
+	    	    	
+			 var flag=0;
+			 var tenderid=$('#tenderid').val();
+			 var tenderid1=$('#tenderno').val();
+			 var fromdate = $('#fromdateId').val();
+			 var iChars ="0123456789";
+			 var reDate =/^(0[1-9]|1\d|2\d|3[01])\-(0[1-9]|1[0-2])\-(19|20)\d{2}$/;
+				var todate= $('#todateId').val();
+					 var selectype=  $('#selecttype').val();
+					 var ecvid=$('#ecv').val();
+					 /*var parameter1=$('#parameter1').val();
+					 var parameter2=$('#parameter2').val();
+					 if(parameter1 !=''  && ecvid==''){
+						  alert ("Please Select ECV parameter field.’  ");
+						     return false;
+						     flag=1;	
+					}
+					 else if(ecvid=='btw' && parameter1 ==''&& parameter2!=''){
+						  alert ("Please Enter the first value’  ");
+						     return false;
+						     flag=1;	
+					}
+					 else if(ecvid=='btw' && parameter1 !=''&& parameter2==''){
+						  alert ("Please Enter the Second value’  ");
+						     return false;
+						     flag=1;	
+					}
+					 else if( parameter2!='' && parameter1!='' ){
+							 if(parseInt(parameter2) <= parseInt(parameter1)){
+							 alert("second value should not be less than first value");
+							 $('#parameter2').val('');
+							 flag=1;
+							 return false;}
+						 }
+		 
+		*/			  if(fromdate!=''  && todate=='' )
+					 {
+					 alert("Please fill the To date field");
+					 flag=1;
+					 }
+					 else if(fromdate !='' && todate!='' &&  selectype==''){
+						 alert("Please select the type");
+						 flag=1;
+					}	
+				
+					else{
+				
+				var iChars ="0123456789";
+				if(tenderid !='' && tenderid !=undefined && tenderid !=null){
+				for (var i = 0; i < tenderid.length; i++)
+				{
+				  if (iChars.indexOf(tenderid.charAt(i)) != -1)
+				  {
+				    
+				  }
+				  else{
+					  alert ("Please enter numeric data in Tender Id.");
+					     return false;
+					     flag=1;
+				  }
+				}
+				}		
+				if(tenderid1 !='' && tenderid1 !=undefined && tenderid1 !=null){
+						for (var i = 0; i < tenderid1.length; i++)
+						{
+						  if (iChars.indexOf(tenderid1.charAt(i)) != -1)
+						  {
+						    
+						  }
+						  else{
+							  alert ("Please enter numeric data in Tender Id.");
+							     return false;
+							     flag=1;
+						  }
+						}}
+					}
+					 if (fromdate!='' && !reDate.test(fromdate)&&flag==0) {
+				         
+				            alert("Invalid from Date Format");
+				            document.getElementById("fromdateId").value = "";
+				            flag=1;
+				        }	
+				       
+				       if (todate!='' && !reDate.test(todate) && flag==0 ) {
+				    	   flag=1;
+				            alert("Invalid To  Date Format");
+				            document.getElementById("todateId").value = "";
+				           
+				        }
+			
+				   
+		 if(flag==0){
+   	serachenable=1;
+   	angular.element( document.querySelector('#advstext')).val('');
+   	$scope.selectedValue='';
+   	//isBack = true;
+   	//$window.localStorage.setItem('isBack', 'true');
+    	  $scope.nested.dtInstance.dataTable.fnDraw();	}
+	    	
+	    }
+	    $scope.normSearchClick=function(){
+	    	if($('#advskey option:selected').val()=="")
+	    	{
+	    	alert("Please select one option from search by field.");
+	    	}
+	    	 else
+	     	{
+	     		if(document.getElementById("advstext").value == "" || document.getElementById("advstext").value == null)
+	     		{
+	     			alert("Please enter some value in search field.");
+	     		}
+	     		else
+	     		{
+	 			   /*console.log("option is not selected");*/
+	 			   $scope.advsearch=true;
+	 		       serachenable=1;
+	 		   	   $scope.nested.dtInstance.dataTable.fnDraw();	
+	     		}
+	 		 }
+	   	
+	   }
+		 $scope.hideAdvSearch=function(){
+			 
+			 if(	$scope.advsearch==false){
+				 serachenable=1;
+					$scope.advsearch=true;
+					angular.element( document.querySelector('#advstext')).val('');
+			    	$scope.selectedValue='';
+			 }
+			 else{
+			    	angular.element( document.querySelector('#advstext')).val('');
+			    	$scope.selectedValue='';
+				 serachenable=1;
+					$scope.advsearch=false;
+			 }
+			   $('#location').prop('selectedIndex',0);
+				 
+			/*	 $('#departmentName').prop('selectedIndex',0);
+				 $('#subDepartmentName').prop('selectedIndex',0);*/
+				  $('#departmentName').empty();
+					$('#subDepartmentName').empty();
+					var newOption = $('<option value="">----Select----</option>');
+					$('#departmentName').append(newOption);
+					var newOption1 = $('<option value="">----Select----</option>');
+					$('#subDepartmentName').append(newOption1);
+				 $('#tendertitle').val("");
+				 
+				 $('#parameter1').val('');
+				 $('#parameter2').val('');
+				 $('#evaluationtype').prop('selectedIndex',0);
+				 $('#ecv').prop('selectedIndex',0);
+				 $('#tenderno').val("");
+				 $('#nameOfProject').val("");
+				 $('#fromdateId').val('');
+				 $('#todateId').val('');
+				 $('#tsectorcat').prop('selectedIndex',0);
+				
+				 $('#tendernoticeid').val("");
+				 $('#selecttype').prop('selectedIndex',0);
+				
+				 $('#tstatus').prop('selectedIndex',0);
+				 $('#tformofcontract').prop('selectedIndex',0);
+				 $('#tproductcat').prop('selectedIndex',0);
+				 $('#tproccat').prop('selectedIndex',0);
+			  
+		 }
+		 
+		 /*$scope.close = function () {  
+			 alert("dsf");
+		       uibModalInstance.close();	       
+		       console.log(SerialNo+"<====>"+$('#loggedusersigningcert').val().toLowerCase());
+	         if(SerialNo==$('#loggedusersigningcert').val().toLowerCase()){ 
+		       console.log($scope.FILEHASH);
+		       //console.log("currindex--->"+currindex);
+		       var hashedData="";
+		       if(signcal=="1"){
+		    	   hashedData=$scope.amendmenthastcode;
+		       }else{
+		    	   hashedData=$scope.FILEHASH;
+		       }
+		              	var qs = {data:hashedData,alias:certSerialNo};
+		              		 	$.ajax({
+		              	    		 url: "http://localhost:9190/data/signature", 
+		              	    		 type: "GET",
+		              	    		 data:qs,
+		              	    		 success: function(result){
+		              	    		 console.log(result);     //alert("result>>> "+result); 
+		              	    		 $scope.signData=result;
+		              	    		document.getElementById("tenderDatasignId").value=result;
+		              	    		
+		              	    		//alert("Signed Successfully!!!");
+		              	    		$('#assignTendeActivityFormId').submit();
+		              	    		
+		              	    		
+		              	    	   if(signcal=="1"){	              	    		
+		              	    		 document.getElementById("tenderDatasignId").value= result; 
+		              	    		 var datasign=result;
+		              	    		 var datahash=document.getElementById("tenderDatahashId").value;
+		              	    		 var datatenderid=document.getElementById("tenderId").value;
+		              	    		 
+		              	    	//	 $('#loader-icon').show();   
+		              	    		 
+		              	    		$.ajax({
+			              	    		 url: "/tender/saveAssignTenderSign", 
+			              	    		 type: "POST",
+			              	    		 data:{tenderid:datatenderid,hash:datahash,sign:datasign},
+			              	    		 success: function(result){
+			              	    		 console.log(result);
+			              	    		 
+			              	    		 if(result)
+			              	    			 {	
+			              	    			//alert("Now load icon");
+			              	    			   // $('#loader-icon').show();   
+			              	    			 	alert("Signed Successfully!!!");
+			              	    			 	$('#loader-icon').hide();
+			              	    			 }
+			              	    		 else
+			              	    			 {
+			              	    			alert("Not Signed, Try again!!!");
+			              	    			 }
+			              		       }
+			              	    	    });
+		              	    			
+		              		       }else{
+		              		    	 //document.getElementById("FILESIGN").value= result;
+		              		    	
+		              		    	 alert("File Signed successfully.");
+		              		       }
+		              	    	  	 
+		              	    	    }}); 
+		              		 	
+				           }else{
+				    		   alert("Please Select Your Registered certificate.");
+				    	   }
+		          		    };*/
+		
+	       }]);
+
+
+
+postApp.controller('pendingamendmentCtrl', ['$timeout','$location','$scope','$window', '$http',  'DTOptionsBuilder'  ,'DTColumnBuilder' ,'fileUpload'  , function($timeout,$location,$scope,$window, $http,DTOptionsBuilder,DTColumnBuilder,fileUpload )
+                                  {
+	 var serachenable=0; 
+	 var vm = this;   
+	    if(document.getElementById('tablstatus')!=null){
+	    	
+
+	    vm.dtOptions = DTOptionsBuilder.newOptions()
+	    
+	    .withOption('sAjaxSource', '/amendment/amendmentListPendingForAproval?id='+document.getElementById('tablstatus').value)
+	         .withDataProp('data')
+	       .withOption('filter', false)
+	     .withOption('lengthMenu', [50,100,150])     
+	        .withOption('processing', true)
+	           .withOption('aDataSort', false)
+	        .withOption('serverSide', true)
+	         .withOption('order', [3, 'desc'])
+	         .withOption('fnServerData', function (sSource, aoData, fnCallback) {
+	        	 if(serachenable==1){
+	        	 if($scope.advsearch==true){ 
+	        		 /*alert("---"+ document.getElementById('searchoptioncombo').value);*/
+	        		 var els = document.getElementsByClassName("c1datableserachNORMAL");
+	        	 Array.prototype.forEach.call(els, function(el) {
+	        			   if(el.value!='' && document.getElementById('advstext').value!=''){
+	        				   aoData.push({
+	                               "name": 'SEARCH',
+	                               "value": "NORMAL"
+	                           }); 
+	              	    	 aoData.push({
+	                               "name": 'NMSKEY',
+	                               "value": el.value
+	                           });
+	              	    	 aoData.push({
+	                               "name": 'NMSVALUE',
+	                               "value": document.getElementById('advstext').value,
+	                           });
+	              	    	/* aoData.push({
+	                             "name": 'TYPE',
+	                             "value": document.getElementById('searchoptioncombo').value,
+	                         });*/
+	              	    }else{
+
+	        				   aoData.push({
+	                               "name": 'SEARCH',
+	                               "value": "NORMAL1"
+	                           }); 
+	              	    	 aoData.push({
+	                               "name": 'NMSKEY',
+	                               "value": el.value
+	                           });
+	              	    	 aoData.push({
+	                               "name": 'NMSVALUE',
+	                               "value": document.getElementById('advstext').value,
+	                           });
+	              	    } 
+	        	 });
+	        	 
+	         }
+	        	 else{
+	        		 var els = document.getElementsByClassName("ui-autocomplete-input"); 
+	        		 aoData.push({
+	        			 "name": 'SEARCH',
+	                     "value": "ADV"
+	                 }); 
+	        		 Array.prototype.forEach.call(els, function(el) {
+	   			  if(el.value!='' ){
+	          	    	 
+	          	    	 aoData.push({
+	                           "name": el.name,
+	                           "value": el.value
+	                       });
+	          	    	 
+	          	    	 
+	          	    }
+	        		 });
+	   		 }
+	         }
+	        	 
+	                
+	        	// serachenable=0;   
+	        	 var csrftoken = $("meta[name='_csrf']").attr("content");
+	                $.ajax({
+	                    "dataType": "json",
+	                    "type": "POST",
+	                    "url": '/amendment/amendmentListPendingForAproval?_csrf='+csrftoken+'&id='+document.getElementById('tablstatus').value,
+	                    "data": aoData,
+	                    "success": function (json) {
+	                        $scope.tableData = json.data;
+	                        $scope.TagCloud = json.TagCloud;
+	                        $scope.CustCols = json.CustCols;
+	                        $scope.setAutoSearchVariable(json.searchKeyWordDto);
+	                        fnCallback(json);
+	                        $scope.$apply();
+	                    }
+	                });
+	            })      
+	        
+	        .withPaginationType('full_numbers');
+	    
+	    if(document.getElementById('tablstatus').value=='2'){
+	    vm.dtColumns = [    
+	            
+		                DTColumnBuilder.newColumn('1').withTitle('S.No.').withOption('width', '100'),
+		                DTColumnBuilder.newColumn('4').withTitle('IFB/Tender Notice No').withOption('width', '100'),
+	                    DTColumnBuilder.newColumn('2').withTitle('Amendment ID').withOption('width', '100'),
+	                    DTColumnBuilder.newColumn('3').withTitle('Tender ID').withOption('width', '100'), 
+	                    DTColumnBuilder.newColumn('11').withTitle('Location Name').withOption('width', '100'),
+	                    
+	                    DTColumnBuilder.newColumn('12').withTitle('Department Name').withOption('width', '100'),
+	                    DTColumnBuilder.newColumn('13').withTitle('Sub-department Name').withOption('width', '100'),
+	                  
+		                DTColumnBuilder.newColumn('5').withTitle('Name of Work/Description of Material').withOption('width', '100'),
+		                DTColumnBuilder.newColumn('7').withTitle('Tender Type').withOption('width', '100'),
+		            
+		                DTColumnBuilder.newColumn('6').withTitle('Action').withOption('width', '120').notSortable()
+		            ];
+	    }
+	    else if(document.getElementById('tablstatus').value=='3'){
+		    vm.dtColumns = [       
+		                    DTColumnBuilder.newColumn('1').withTitle('S.No.').withOption('width', '100'),
+		                    DTColumnBuilder.newColumn('4').withTitle('IFB/Tender Notice No').withOption('width', '100'),
+		                    DTColumnBuilder.newColumn('7').withTitle('Tender Type').withOption('width', '80'),
+       
+                DTColumnBuilder.newColumn('3').withTitle('Tender ID').withOption('width', '80'), 
+             
+                DTColumnBuilder.newColumn('11').withTitle('Location Name').withOption('width', '80'),
+                
+                DTColumnBuilder.newColumn('12').withTitle('Department Name').withOption('width', '80'),
+                DTColumnBuilder.newColumn('13').withTitle('Sub-department Name').withOption('width', '80'),
+                DTColumnBuilder.newColumn('5').withTitle('Name of Work/Description of Material').withOption('width', '100'),
+
+            
+           
+                DTColumnBuilder.newColumn('6').withTitle('Action').withOption('width', '100').notSortable()
+            ];
+}
+	    
+	    }
+		
+	    $scope.localloc = null;
+	    $scope.localdept = null;
+	    $scope.localsubdept = null;
+	    
+	    $scope.setAutoSearchVariable = function(searchKeyWordDto){
+	    	 var searchKeyWordDto = angular.fromJson(searchKeyWordDto);
+	         console.log(searchKeyWordDto);
+	         $scope.advsearch = true;  //Always assume normal case
+	         angular.forEach(searchKeyWordDto, function(value, key) {
+	             //console.log('key:', key);
+	             //console.log('value:', value);
+	             if(key == 'search' && value != null && value == 'NORMAL'){
+	            	 $scope.advsearch = true;
+	             }
+	             
+	             if(key == 'search' && value != null && value == 'ADV'){
+	            	 $scope.advsearch = false;
+	             }
+	             
+	             if(key == 'nmskey' && value != null){
+	            	 $scope.selectedValue = value;
+	             }
+	             
+	             if(key == 'nmsvalue' && value != null){
+	            	 angular.element( document.querySelector('#advstext')).val(value);
+	             }
+	             
+	             if(key == 'tlocation' && value != null){
+	            	 angular.element( document.querySelector('#location')).val(value);
+	            	 $scope.localloc = value;
+	             }
+	             
+	             if(key == 'tdepartment' && value != null){
+	            	 $scope.localdept = value;
+	             }
+	             
+	             if(key == 'amendmentid' && value != null){
+	            	 angular.element( document.querySelector('#amendno')).val(value);
+	             }
+	             
+	             if(key == 'tenderno' && value != null){
+	            	 angular.element( document.querySelector('#tenderno')).val(value);
+	             }
+	             
+	             if(key == 'tenderid' && value != null){
+	            	 angular.element( document.querySelector('#tenderid')).val(value);
+	             }
+
+	             if(key == 'tendernoticeno' && value != null){
+	            	 angular.element( document.querySelector('#tendernoticeid')).val(value);
+	             }
+	             
+	             if(key == 'tendertitle' && value != null){
+	            	 angular.element( document.querySelector('#tendertitle')).val(value);
+	             }
+	             
+	             if(key == 'tproccat' && value != null){
+	            	 angular.element( document.querySelector('#tproccat')).val(value);
+	             }
+	             
+	             if(key == 'tproductcat' && value != null){
+	            	 angular.element( document.querySelector('#tproductcat')).val(value);
+	             }
+	             
+	             if(key == 'tsectorcat' && value != null){
+	            	 angular.element( document.querySelector('#tsectorcat')).val(value);
+	             }
+	             
+	             if(key == 'tsubdepartment' && value != null){
+	            	 $scope.localsubdept = value;
+	            	 
+	             }
+	             
+	             if(key == 'ecv' && value != null){
+	             	 angular.element( document.querySelector('#ecv')).val(value);
+	           }
+	           
+	           if(key == 'parameter1' && value != null){
+	             	 angular.element( document.querySelector('#parameter1')).val(value);
+	           }
+	           
+	           if(key == 'parameter2' && value != null){
+	             	 angular.element( document.querySelector('#parameter2')).val(value);
+	           }
+	           
+	           if(key == 'selecttype' && value != null){
+	           	 angular.element( document.querySelector('#selecttype')).val(value);
+	            }
+	         if(key == 'fromdate' && value != null){
+	           	 angular.element( document.querySelector('#fromdateId')).val(value);
+	            }
+	         if(key == 'todate' && value != null){
+	           	 angular.element( document.querySelector('#todateId')).val(value);
+	            }
+	         if(key == 'evaluationtype' && value != null){
+	        	 angular.element( document.querySelector('#evaluationtype')).val(value);
+	         }
+	         if(key == 'formofcontract' && value != null){
+	      	   angular.element( document.querySelector('#tformofcontract')).val(value);
+	         }
+	         if(key == 'nameofproject' && value != null){
+	        	   angular.element( document.querySelector('#nameOfProject')).val(value);
+	           }
+	             
+	           });
+	         
+	         $scope.findDeptSelectedOnLocid();
+	         $scope.findSubDeptSelectedOnDeptid();
+	     	 //$scope.nested.dtInstance.dataTable.fnDraw();	
+	    	
+	    }
+		
+		$scope.nested = {};
+	    $scope.nested.dtInstance = {}
+	  
+		 $scope.advsearch=true;
+	    $scope.advsearchClick=function(){
+
+		    	 var flag=0;
+				 var tenderid=$('#tenderid').val();
+				 var fromdate = $('#fromdateId').val();
+				 var amendmentid = $('#amendno').val();
+				 var iChars ="0123456789";
+				 var reDate =/^(0[1-9]|1\d|2\d|3[01])\-(0[1-9]|1[0-2])\-(19|20)\d{2}$/;
+					var todate= $('#todateId').val();
+						 var selectype=  $('#selecttype').val();
+						 var ecvid=$('#ecv').val();
+						 var parameter1=parseInt($('#parameter1').val());
+						 var parameter2=parseInt($('#parameter2').val());
+						 if(parameter1 !=''  && ecvid==''){
+							  alert ("Please Select ECV parameter field.’  ");
+							     return false;
+							     flag=1;	
+						}
+						 else if(fromdate!=''  && todate=='' )
+						 {
+						 alert("Please fill the To date field");
+						 flag=1;
+						 }
+						 else if(fromdate !='' && todate!='' &&  selectype==''){
+							 alert("Please select the type");
+							 flag=1;
+						}	
+						/* else  if (fromdate!='' && !reDate.test(fromdate)&&flag==0) {
+						         
+					            alert("Invalid from Date Format");
+					            document.getElementById("fromdateId").value = "";
+					            flag=1;
+					        }	
+					       
+						 else  if (todate!='' && !reDate.test(todate) && flag==0 ) {
+					    	   flag=1;
+					            alert("Invalid To  Date Format");
+					            document.getElementById("todateId").value = "";
+					           
+					        }*/
+						 else  if( parameter2!='' && parameter1!='' ){
+								 if(parameter2<=parameter1){
+								 alert("second value should not be less than first value");
+								 $('#parameter2').val('');
+								 flag=1; }
+							 }
+						else{
+					for (var i = 0; i < tenderid.length; i++)
+					{
+					  if (iChars.indexOf(tenderid.charAt(i)) != -1)
+					  {
+					    
+					  }
+					  else{
+						  alert ("Please enter numeric data in Tender Id.");
+						     return false;
+						     flag=1;
+					  }
+					}
+					if(amendmentid!=''){
+					for (var i = 0; i < amendmentid.length; i++)
+					{
+					  if (iChars.indexOf(amendmentid.charAt(i)) != -1)
+					  {
+					    
+					  }
+					  else{
+						  alert ("Please enter numeric data in Amendment Id.");
+						     return false;
+						     flag=1;
+					  }
+					}}
+						
+						}
+						
+					     
+			 
+			 if(flag==0){
+	    	serachenable=1;
+	    	angular.element( document.querySelector('#advstext')).val('');
+	    	$scope.selectedValue='';
+	    	//isBack = true;
+	    	//$window.localStorage.setItem('isBack', 'true');
+	     	  $scope.nested.dtInstance.dataTable.fnDraw();	}
+		    	
+		    
+	    	
+	    }
+	    $scope.normSearchClick=function(){
+	    	$scope.advsearch=true;
+	    	serachenable=1;
+	   	  $scope.nested.dtInstance.dataTable.fnDraw();	
+	   	  
+	   	  
+	   	  
+	   	
+	   }
+		 $scope.hideAdvSearch=function(){
+			 $scope.localloc='';
+			 $scope.localdept='';
+			 if(	$scope.advsearch==false){
+				 serachenable=1;
+					$scope.advsearch=true;
+			    	angular.element( document.querySelector('#advstext')).val('');
+			    	$scope.selectedValue='';
+				 
+			 }
+			 else{
+			    	angular.element( document.querySelector('#advstext')).val('');
+			    	$scope.selectedValue='';
+				 serachenable=1;
+					$scope.advsearch=false;
+			 }
+			
+			
+			 
+			   $('#location').prop('selectedIndex',0);
+				 
+				
+				  $('#departmentName').empty();
+					$('#subDepartmentName').empty();
+					var newOption = $('<option value="">----Select----</option>');
+					$('#departmentName').append(newOption);
+					var newOption1 = $('<option value="">----Select----</option>');
+					$('#subDepartmentName').append(newOption1);
+				 $('#tendertitle').val("");
+				 
+				 $('#amendno').val('');
+				 $('#tenderid').val('');
+				 $('#evaluationtype').prop('selectedIndex',0);
+				 $('#ecv').prop('selectedIndex',0);
+				 $('#tenderno').val("");
+				 $('#nameOfProject').val("");
+				 $('#fromdateId').val('');
+				 $('#todateId').val('');
+				 $('#tsectorcat').prop('selectedIndex',0);
+				
+				 $('#tendernoticeid').val("");
+				 $('#selecttype').prop('selectedIndex',0);
+				
+				 $('#tstatus').prop('selectedIndex',0);
+				 $('#tformofcontract').prop('selectedIndex',0);
+				 $('#tproductcat').prop('selectedIndex',0);
+				 $('#tproccat').prop('selectedIndex',0);
+			 
+		 }
+		 
+		 $scope.findDeptSelectedOnLocid = function(){
+			 
+			 var csrftoken = $("meta[name='_csrf']").attr("content");
+				//var loc=document.getElementById("location").value;
+				$('#departmentName').empty();
+				$('#subDepartmentName').empty();
+				$.ajax({
+					url: "/tender/selectDepartment?_csrf="+csrftoken,
+					type: "post",
+					data: {locid:$scope.localloc},
+					success: function(data)
+					{	
+						$('#departmentName').empty();
+						$('#subDepartmentName').empty();
+						var newOption = $('<option value="">----Select----</option>');
+						$('#departmentName').append(newOption);
+						var newOption1 = $('<option value="">----Select----</option>');
+						$('#subDepartmentName').append(newOption1);
+						for(var datafield in data)
+						{
+							var a=data[datafield]["deptid"];
+							newOption = $('<option value="'+data[datafield]["deptid"]+'">'+data[datafield]["deptname"]+'</option>');
+							$('#departmentName').append(newOption); 
+						}  
+						angular.element( document.querySelector('#departmentName')).val($scope.localdept);
+					}
+				});
+		 }
+		 
+		 $scope.findSubDeptSelectedOnDeptid = function(){
+			 var deptid=document.getElementById("departmentName").value;	
+				var csrftoken = $("meta[name='_csrf']").attr("content");
+				$('#subDepartmentName').empty();			
+				$.ajax({
+				url: "/tender/subdeptlist1?_csrf="+csrftoken,
+				type: "post",
+				data: {name:$scope.localdept},
+				success: function(data)
+				{
+					
+					$('#subDepartmentName').empty();
+					$('#subDepartmentName').empty(); //remove all child nodes
+					var newOption = $('<option value="">----Select----</option>');
+					$('#subDepartmentName').append(newOption);
+					
+					for(var datafield in data)
+					{
+						var a=data[datafield]["deptid"];
+						//if(${subdept}.indexOf(a)>-1)
+							//{
+								newOption = $('<option value="'+data[datafield]["deptid"]+'">'+data[datafield]["deptname"]+'</option>');
+								$('#subDepartmentName').append(newOption);
+							//}
+					}
+					angular.element( document.querySelector('#subDepartmentName')).val($scope.localsubdept);
+				}
+			});
+		 }
+
+		
+		
+	       }]);
+                     
