@@ -9,6 +9,7 @@ import pandas as pd
 from urllib.parse import urljoin
 from openpyxl import load_workbook
 from openpyxl.styles import Font
+from openpyxl.styles import Alignment
 import time
 
 # Launch browser and go to homepage
@@ -56,7 +57,8 @@ h4_rows = []     # Store row indices for <h4> rows
 
 h4_idx = 0  # Index for h4_texts
 
-#adding pdf url
+
+# adding pdf url
 for table_idx, table in enumerate(child_tables):
     if h4_idx < len(h4_texts):
         all_rows.append([h4_texts[h4_idx]])
@@ -103,6 +105,7 @@ for row_idx, col_idx in bold_cells:
 for row_idx in h4_rows:
     for cell in ws[row_idx]:
         cell.font = bold_font
+    
 wb.save(excel_file)
 
 print(f"✅ All tables combined and saved to {excel_file} with bold headers and section titles!")
