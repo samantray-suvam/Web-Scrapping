@@ -6,11 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import pandas as pd
+from urllib.parse import urljoin
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 import time
 
-# 1️⃣ Launch browser and go to homepage
+# Launch browser and go to homepage
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 driver.maximize_window()
 parent_url = "https://rnbtender.nprocure.com/"
@@ -18,7 +19,7 @@ driver.get(parent_url)
 print("⏳ Waiting for page to load...")
 time.sleep(5)  # Let pop-up auto-close
 
-# 2️⃣ Click the anchor with id="tenderInProgress"
+# Click the anchor with id="tenderInProgress"
 try:
     tender_in_progress = WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.ID, "tenderInProgress"))
@@ -30,12 +31,12 @@ except Exception as e:
     driver.quit()
     exit()
 
-# 3️⃣ Switch to the new tab
+# Switch to the new tab
 WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) > 1)
 driver.switch_to.window(driver.window_handles[-1])
 print("🔄 Switched to new tab.")
 
-# 4️⃣ Wait for tables to load
+# Wait for tables to load
 WebDriverWait(driver, 20).until(
     EC.presence_of_element_located((By.TAG_NAME, "table"))
 )
@@ -55,8 +56,8 @@ h4_rows = []     # Store row indices for <h4> rows
 
 h4_idx = 0  # Index for h4_texts
 
-for table in child_tables:
-    # Insert the <h4> text (if available) before the table section
+#adding pdf url
+for table_idx, table in enumerate(child_tables):
     if h4_idx < len(h4_texts):
         all_rows.append([h4_texts[h4_idx]])
         h4_rows.append(len(all_rows))  # 1-based index for openpyxl
@@ -65,11 +66,26 @@ for table in child_tables:
         cells = tr.find_all(["td", "th"])
         row = []
         for col_idx, cell in enumerate(cells):
-            row.append(cell.get_text(strip=True))
+            # For the last table, check for PDF links in <a> tags
+            if table_idx == len(child_tables) - 1 and cell.name == "td":
+                a_tag = cell.find("a", href=True)
+                if a_tag and a_tag["href"].lower().endswith(".pdf"):
+                    link_text = a_tag.get_text(strip=True)
+                    pdf_url = urljoin("https://rnbtender.nprocure.com", a_tag["href"])
+                    # Insert the PDF URL in the 2nd column
+                    if col_idx == 1:
+                        row.append(pdf_url)
+                    else:
+                        row.append(cell.get_text(strip=True))
+                else:
+                    row.append(cell.get_text(strip=True))
+            else:
+                row.append(cell.get_text(strip=True))
             if cell.name == "th":
                 bold_cells.append((len(all_rows)+1, col_idx+1))  # openpyxl is 1-based
         if row:
             all_rows.append(row)
+          
 
 # Save all rows to a single sheet
 df = pd.DataFrame(all_rows)
