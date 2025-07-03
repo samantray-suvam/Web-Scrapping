@@ -32,7 +32,6 @@ except Exception as e:
     driver.quit()
     exit()
 
-
 # Switch to the new tab
 WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) > 1)
 driver.switch_to.window(driver.window_handles[-1])
@@ -47,8 +46,8 @@ child_soup = BeautifulSoup(child_html, 'html.parser')
 child_tables = child_soup.find_all("table")
 
 
-
 #printing the cells
+
 h4_tags = child_soup.find_all("h4")
 h4_texts = [h4.get_text(strip=True) for h4 in h4_tags]
 
@@ -75,7 +74,6 @@ for table_idx, table in enumerate(child_tables):
                 if a_tag and a_tag["href"].lower().endswith(".pdf"):
                     link_text = a_tag.get_text(strip=True)
                     pdf_url = urljoin("https://rnbtender.nprocure.com", a_tag["href"])
-                    
                     # Insert the PDF URL in the 2nd column
                     if col_idx == 1:
                         row.append(pdf_url)
@@ -93,19 +91,16 @@ for table_idx, table in enumerate(child_tables):
 
 # Save all rows to a single sheet
 df = pd.DataFrame(all_rows)
-excel_file = "all_tender_details.xlsx"
+excel_file = "all_tender_details_tables.xlsx"
 df.to_excel(excel_file, index=False, header=False)
-
 
 # Make <th> cells and <h4> rows bold
 wb = load_workbook(excel_file)
 ws = wb.active
 bold_font = Font(bold=True)
-
 # Bold for <th> cells
 for row_idx, col_idx in bold_cells:
     ws.cell(row=row_idx, column=col_idx).font = bold_font
-
 # Bold for <h4> rows (entire row)
 for row_idx in h4_rows:
     for cell in ws[row_idx]:
