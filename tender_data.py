@@ -49,8 +49,8 @@ def scrape_rnb_tenders():
 
     # Save all data to Excel
     df = pd.DataFrame(all_data, columns=headers if headers else None)
-    df.to_excel("tenders_list.xlsx", index=False)
-    print("\nData from all pages saved to tenders_list.xlsx")
+    df.to_excel("tender_data_list.xlsx", index=False)
+    print("\nData from all pages saved to tender_data_list.xlsx")
 
 if __name__ == "__main__":
 

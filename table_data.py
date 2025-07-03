@@ -18,7 +18,7 @@ driver.maximize_window()
 parent_url = "https://rnbtender.nprocure.com/"
 driver.get(parent_url)
 print("⏳ Waiting for page to load...")
-time.sleep(5)  # Let pop-up auto-close
+time.sleep(5)  # Let pop-up auto-close == 120
 
 # Click the anchor with id="tenderInProgress"
 try:
@@ -91,7 +91,7 @@ for table_idx, table in enumerate(child_tables):
 
 # Save all rows to a single sheet
 df = pd.DataFrame(all_rows)
-excel_file = "all_tables.xlsx"
+excel_file = "tender_data_details.xlsx"
 df.to_excel(excel_file, index=False, header=False)
 
 # Make <th> cells and <h4> rows bold
