@@ -91,7 +91,7 @@ for table_idx, table in enumerate(child_tables):
 
 # Save all rows to a single sheet
 df = pd.DataFrame(all_rows)
-excel_file = "tender_data_details.xlsx"
+excel_file = "all_tender_details.xlsx"
 df.to_excel(excel_file, index=False, header=False)
 
 # Make <th> cells and <h4> rows bold
